@@ -131,6 +131,11 @@ p {
   padding-block: clamp(4rem, 8vw, 6.5rem);
   border-top: 1px solid var(--rule);
 }
+@media (max-width: 600px) {
+  .block {
+    padding-block: 3.5rem;
+  }
+}
 .block-sand {
   background: var(--sand);
   border-top-color: transparent;

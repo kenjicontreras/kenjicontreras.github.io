@@ -73,7 +73,7 @@ const stories = {
 
   <div class="wrap next">
     <button type="button" class="btn btn-line" data-next>
-      Next project: <span data-next-label>{projects[1].tab}</span>
+      <span class="next-lead">Next project:</span> <span class="next-title" data-next-label>{projects[1].tab}</span>
       <span class="arrow" aria-hidden="true">→</span>
     </button>
   </div>
@@ -484,6 +484,26 @@ const stories = {
     }
     .next .btn {
       width: 100%;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas: 'lead arrow' 'title arrow';
+      justify-items: start;
+      gap: 0.1rem 1rem;
+      padding-block: 0.8rem;
+      text-align: left;
+    }
+    .next-lead {
+      grid-area: lead;
+      font-size: var(--step--1);
+      font-weight: 500;
+      color: var(--slate);
+    }
+    .next-title {
+      grid-area: title;
+    }
+    .next .arrow {
+      grid-area: arrow;
+      align-self: center;
     }
   }
 

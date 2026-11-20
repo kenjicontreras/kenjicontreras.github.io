@@ -87,6 +87,11 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
   #about {
     padding-block: clamp(4.5rem, 10vw, 8rem);
   }
+  @media (max-width: 600px) {
+    #about {
+      padding-block: 3.5rem;
+    }
+  }
   .grid {
     display: grid;
     grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);

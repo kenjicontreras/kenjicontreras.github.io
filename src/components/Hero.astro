@@ -158,10 +158,21 @@ import headshot from '../assets/kenji-headshot.jpg';
     font-weight: 500;
     color: var(--ink);
   }
-  /* names separated by thin rules, read as one reference line */
-  .trust li + li {
-    padding-left: 1.25rem;
-    border-left: 1px solid var(--rule);
+  /* Narrower screens: the names wrap, so no rules (a rule would start a line). */
+  @media (max-width: 1099px) {
+    .trust ul {
+      gap: 0.5rem 1.75rem;
+    }
+  }
+  /* Phones: one name per line. */
+  @media (max-width: 600px) {
+    .trust {
+      gap: 0.6rem;
+    }
+    .trust ul {
+      flex-direction: column;
+      gap: 0.45rem;
+    }
   }
 
   /* Desktop: the names spread across the full width, each rule midway
@@ -177,8 +188,10 @@ import headshot from '../assets/kenji-headshot.jpg';
       padding-inline: 1.25rem;
       text-align: center;
     }
+    /* names separated by thin rules, read as one reference line */
     .trust li + li {
       padding-left: 1.25rem;
+      border-left: 1px solid var(--rule);
     }
     .trust li:first-child {
       flex-grow: 0.5;
