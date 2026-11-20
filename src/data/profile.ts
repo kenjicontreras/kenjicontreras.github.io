@@ -35,10 +35,6 @@ export type StoryId = 'binational-manatees' | 'drone-manatees' | 'vector-spectra
 export type Skill = {
   name: string;
   line: string;
-  /** Project tabs that show this skill. */
-  seenIn?: StoryId[];
-  /** Experience entry that shows it, when no story does. */
-  seenAt?: { label: string; href: string };
   /** Real tool icons (files in public/icons) with their names. */
   tools?: { name: string; icon?: string }[];
 };
@@ -48,32 +44,26 @@ export const skills: Skill[] = [
   {
     name: 'Machine learning',
     line: 'Implementing and optimising models for scientific, business and field data, even when it’s noisy, scarce or unlabelled.',
-    seenIn: ['binational-manatees', 'drone-manatees', 'vector-spectra', 'watermelon-varieties', 'survey-nlp'],
   },
   {
     name: 'AI automation',
     line: 'Generative AI tools that read, sort and summarise text, draft reports and automate repetitive work, with people reviewing the results and data kept under your control.',
-    seenIn: ['survey-nlp'],
   },
   {
     name: 'Computer vision',
     line: 'Detecting and classifying objects in photos and video, from drone wildlife surveys to fruit variety recognition.',
-    seenIn: ['drone-manatees', 'watermelon-varieties'],
   },
   {
     name: 'Audio and signal processing',
     line: 'Cleaning and analysing sound and instrument data to separate meaningful signals from noise.',
-    seenIn: ['binational-manatees', 'vector-spectra'],
   },
   {
     name: 'Data analysis and visualisation',
     line: 'Statistics, data pipelines and interactive dashboards, in Power BI or as custom web tools.',
-    seenIn: ['survey-nlp', 'binational-manatees'],
   },
   {
     name: 'Applied research',
     line: 'Peer-reviewed research with field specialists in bioacoustics, entomology, agriculture and Spanish-language text, published in journals and presented at engineering conferences.',
-    seenIn: ['binational-manatees', 'vector-spectra', 'watermelon-varieties', 'survey-nlp'],
   },
   {
     name: 'Programming and tools',

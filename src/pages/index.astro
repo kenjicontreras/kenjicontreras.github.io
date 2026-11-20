@@ -50,11 +50,6 @@ const contact = [
     </div>
     <div class="wrap closing">
       <p>{profile.name} · {profile.location.split(',')[0]} · © {new Date().getFullYear()}</p>
-      <p class="plinks">
-        {profile.links.scholar && <a class="draw" href={profile.links.scholar} target="_blank" rel="noopener">Google Scholar</a>}
-        {profile.links.researchgate && <a class="draw" href={profile.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>}
-        {profile.cv && <a class="draw" href={cvHref} download>CV (PDF)</a>}
-      </p>
     </div>
   </footer>
 </Base>
@@ -113,20 +108,6 @@ const contact = [
     gap: 0.5rem 2rem;
     color: #b9d0d5;
     font-size: var(--step--1);
-  }
-  .plinks {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0 1.5rem;
-  }
-  .plinks a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: #e9f3f4;
-  }
-  .plinks a:hover {
-    color: #7fd6cf;
   }
   @media (max-width: 860px) {
     .next {
