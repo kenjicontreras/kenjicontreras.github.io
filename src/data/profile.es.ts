@@ -59,7 +59,7 @@ const refsEs: Pick<Reference, 'role' | 'work' | 'link'>[] = [
 
 export const aboutEs: typeof about = {
   paragraphs: [
-    'Me formé como ingeniero en telecomunicaciones, pero la naturaleza siempre me ha atraído. Me fascinaba cómo los números y la estadística podían dar sentido a algo tan complejo como los sonidos de los animales o la vida de los insectos. Desde entonces, la mayoría de los datos con los que he trabajado han sido ruidosos, escasos o registrados en campo, así que aprendí a desarrollar IA que funcione justamente en esas condiciones.',
+    'Me formé como ingeniero en telecomunicaciones, pero la naturaleza siempre me ha atraído. Me fascinaba cómo los números y la estadística podían dar sentido a algo tan complejo como los sonidos de los animales o la diversidad de los insectos. Desde entonces, la mayoría de los datos con los que he trabajado han sido ruidosos, escasos o registrados en campo, así que aprendí a desarrollar IA que funcione justamente en esas condiciones.',
     'Fuera del trabajo, practico artes marciales desde hace diez años y hoy doy clases a personas de todas las edades. El entrenamiento y su filosofía me dan un equilibrio que complementa mi forma de trabajar. Además, me encanta aprender idiomas: aparte del español y el inglés, he estudiado alemán y japonés para ampliar mi bagaje cultural y mis habilidades de comunicación.',
   ],
   education: [
