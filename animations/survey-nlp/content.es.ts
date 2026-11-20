@@ -14,7 +14,7 @@ export const content: StoryContent = {
   steps: [
     {
       title: 'Tres proyectos, un mismo hilo',
-      body: 'Los tres encuentran patrones en lo que dice la gente. Todo empezó con mi investigación publicada sobre la Asamblea Nacional de Panamá. En CID Gallup, una firma de encuestas e investigación de mercados que trabaja en toda América Latina, partí de ella para crear una herramienta que clasifica respuestas abiertas de encuestas, y luego otra que revisa la calidad de las entrevistas.',
+      body: 'Los tres encuentran patrones en lo que dice la gente. Todo empezó con mi investigación publicada sobre la Asamblea Nacional de Panamá. Con esa base, en CID Gallup (una firma de encuestas e investigación de mercados que trabaja en toda América Latina) creé una herramienta que clasifica las respuestas abiertas de las encuestas y, después, otra que revisa la calidad de las entrevistas.',
       points: [
         'El Proyecto 1 es investigación publicada. Los proyectos 2 y 3 son herramientas que creé para analistas de encuestas y supervisores de campo.',
         'Los datos de encuestas de CID Gallup son confidenciales, así que todos los ejemplos de encuestas aquí son inventados.',
