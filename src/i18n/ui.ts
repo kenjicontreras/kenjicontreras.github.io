@@ -79,7 +79,7 @@ export const ui = {
     langName: { en: 'English', es: 'Español' },
     hero: {
       discuss: 'Hablemos de su proyecto',
-      see: 'Ver los proyectos',
+      see: 'Explore los proyectos',
       cv: 'Descargar mi CV (PDF, en inglés)',
       trust: 'Investigación y trabajo con',
     },

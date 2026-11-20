@@ -32,7 +32,7 @@ export const skillsEs: Skill[] = [
   },
   {
     name: 'Procesamiento de audio y señales',
-    line: 'Limpieza y análisis de datos acústicos y de instrumentos para separar las señales útiles del ruido.',
+    line: 'Limpieza y análisis de señales de distintos tipos, desde audio hasta mediciones de laboratorio, para separar la información útil del ruido.',
   },
   {
     name: 'Estadística y dashboards interactivos',
