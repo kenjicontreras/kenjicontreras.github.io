@@ -30,6 +30,7 @@ import { profile } from '../data/profile';
       <a href="#work">Projects</a>
       <a href="#experience">Experience</a>
       <a href="#about">About</a>
+      <a href="#contact" class="m-contact">Contact</a>
     </nav>
   </div>
 </header>
@@ -111,7 +112,7 @@ import { profile } from '../data/profile';
   .name {
     white-space: nowrap;
   }
-  /* Contact stays visible on phones, set off by a rule from the rest. */
+  /* Contact is set off by a rule from the rest. */
   nav a.contact-link {
     margin-left: 0.5rem;
     padding-left: 1.25rem;
@@ -124,13 +125,9 @@ import { profile } from '../data/profile';
     display: none;
   }
   @media (max-width: 640px) {
-    .inner > nav a:not(.contact-link) {
+    /* Phones: every section, Contact included, lives in the menu. */
+    .inner > nav a {
       display: none;
-    }
-    nav a.contact-link {
-      border-left: 0;
-      padding-left: 0.75rem;
-      margin-left: 0;
     }
     .menu-btn {
       display: inline-grid;
@@ -192,6 +189,10 @@ import { profile } from '../data/profile';
     }
     .mpanel nav a + a {
       border-top: 1px solid var(--rule);
+    }
+    .mpanel nav a.m-contact {
+      font-weight: 650;
+      color: var(--teal-deep);
     }
   }
   @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
