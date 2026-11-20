@@ -1,0 +1,412 @@
+---
+// The stage for the drone-manatees story: one SVG (viewBox 800 × 600) holding a
+// layer per storyboard step. Every scene is seen from above, as the drone sees it.
+// Everything is drawn here at build time; scene.ts only moves and fades it.
+// Layers are addressed with data-l="name" (see storyboard.md).
+import type { ImageMetadata } from 'astro';
+import './tokens.css';
+import lake from './data/lake.json';
+
+// ── helpers ───────────────────────────────────────────────────────────────
+let seed = 9040230; // deterministic, so builds are stable
+const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const r1 = (v: number) => Math.round(v * 10) / 10;
+type P = [number, number];
+
+// Inline the SVG assets as <symbol>s so they can be recoloured with `color`.
+const raw = import.meta.glob<string>('./assets/svg/*.svg', { eager: true, query: '?raw', import: 'default' });
+const symbol = (name: string) => {
+  const m = raw[`./assets/svg/${name}.svg`].match(/<svg([^>]*)>([\s\S]*)<\/svg>/)!;
+  const viewBox = m[1].match(/viewBox="([^"]*)"/)![1];
+  const attrs = m[1].replace(/\s(xmlns|viewBox)="[^"]*"/g, '');
+  return `<symbol id="dm-${name}" viewBox="${viewBox}"><g${attrs}>${m[2]}</g></symbol>`;
+};
+const symbols = ['manatee-top-pair', 'drone-top', 'boat-top', 'manatee-top', 'log-top', 'hyacinth', 'shore-hero', 'hyacinth-hero', 'log-hero']
+  .map(symbol)
+  .join('');
+
+const photos = import.meta.glob<{ default: ImageMetadata }>('./assets/img/*.webp', { eager: true });
+const img = (name: string) => photos[`./assets/img/${name}.webp`].default.src;
+
+// ── step 3: one survey area, flown in parallel lines (illustrative shape) ──
+const area: P[] = [[70, 150], [190, 96], [380, 110], [500, 170], [520, 330], [430, 470], [240, 500], [100, 420]];
+const areaD = 'M' + area.map((p) => p.join(',')).join(' L') + ' Z';
+// where a horizontal flight line enters and leaves the area
+const span = (y: number): P => {
+  const xs: number[] = [];
+  area.forEach((a, i) => {
+    const b = area[(i + 1) % area.length];
+    if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y)) xs.push(a[0] + ((y - a[1]) / (b[1] - a[1])) * (b[0] - a[0]));
+  });
+  return [Math.min(...xs) + 16, Math.max(...xs) - 16];
+};
+const passes = Array.from({ length: 9 }, (_, i) => {
+  const y = 128 + i * 43;
+  const [x0, x1] = span(y);
+  return i % 2 ? { y, from: x1, to: x0 } : { y, from: x0, to: x1 };
+});
+const route = passes.map((p, i) => `${i ? 'L' : 'M'}${r1(p.from)},${p.y} L${r1(p.to)},${p.y}`).join(' ');
+// one frame for each photo taken along the route, in flight order
+const snaps = passes.flatMap((p) => {
+  const n = Math.max(1, Math.floor(Math.abs(p.to - p.from) / 50));
+  return Array.from({ length: n + 1 }, (_, k) => ({ x: r1(p.from + ((p.to - p.from) * k) / n), y: p.y }));
+});
+const flown = [
+  { id: 'flights', text: '0', label: 'flights' },
+  { id: 'hours', text: '0 h', label: 'in the air' },
+  { id: 'gap', text: '3 to 5 s', label: 'between photos' },
+].map((f, i) => ({ ...f, y: 150 + i * 150 }));
+
+// ── step 4: a wall of photos, then one of them ────────────────────────────
+const wall = Array.from({ length: 16 * 30 }, (_, i) => ({
+  x: 22 + (i % 30) * 25.4,
+  y: 44 + Math.floor(i / 30) * 26,
+  o: r1(0.45 + rand() * 0.55),
+}));
+const photo = { x: 40, y: 40, w: 720, h: 450 };
+// what is in the photo: one manatee and several logs, all specks (illustrative)
+const manatee = { x: 448, y: 258, w: 38, rot: -24 };
+const logs = [
+  { x: 262, y: 300, w: 30, rot: 35 },
+  { x: 612, y: 122, w: 26, rot: -60 },
+  { x: 150, y: 150, w: 22, rot: 80 },
+  { x: 540, y: 380, w: 28, rot: 12 },
+  { x: 356, y: 96, w: 20, rot: -15 },
+  { x: 690, y: 300, w: 24, rot: 50 },
+  { x: 330, y: 420, w: 22, rot: -40 },
+];
+const ripples = Array.from({ length: 34 }, () => {
+  const x = photo.x + 20 + rand() * (photo.w - 80);
+  const y = photo.y + 16 + rand() * (photo.h - 32);
+  const w = 18 + rand() * 30;
+  return `M${r1(x)},${r1(y)} q${r1(w / 2)},${r1(-3 - rand() * 3)} ${r1(w)},0`;
+}).join(' ');
+const insets = [
+  { id: 'manatee', label: 'a manatee', side: 'left', cx: 650, cy: 392, r: 70, from: [manatee.x + 14, manatee.y + 10] as P, file: 'crop-manatee' },
+  { id: 'log', label: 'a log', side: 'right', cx: 128, cy: 398, r: 62, from: [logs[0].x - 8, logs[0].y + 12] as P, file: 'crop-log' },
+].map((s) => {
+  // the leader line stops at the edge of the circle
+  const d = Math.hypot(s.cx - s.from[0], s.cy - s.from[1]);
+  const k = (d - s.r) / d;
+  return { ...s, to: [r1(s.from[0] + (s.cx - s.from[0]) * k), r1(s.from[1] + (s.cy - s.from[1]) * k)] as P };
+});
+
+// ── step 5: overlapping tiles, read in order ──────────────────────────────
+const T = 168;
+const tiles = Array.from({ length: 15 }, (_, i) => ({
+  i,
+  x: r1(photo.x + (i % 5) * ((photo.w - T) / 4)),
+  y: r1(photo.y + Math.floor(i / 5) * ((photo.h - T) / 2)),
+}));
+const tileOf = (x: number, y: number) => tiles.find((t) => x >= t.x && x <= t.x + T && y >= t.y && y <= t.y + T)!.i;
+const boxes = [
+  { kind: 'find', word: 'manatee', x: manatee.x - 26, y: manatee.y - 22, w: 52, h: 44, tile: tileOf(manatee.x, manatee.y), tag: 118 },
+  { kind: 'other', word: 'log', x: logs[0].x - 22, y: logs[0].y - 20, w: 44, h: 40, tile: tileOf(logs[0].x, logs[0].y), tag: 58 },
+  { kind: 'other', word: 'log', x: logs[1].x - 20, y: logs[1].y - 20, w: 40, h: 40, tile: tileOf(logs[1].x, logs[1].y), tag: 58 },
+];
+
+// ── step 6: the paper's own example (Fig. 18C) with its scores (Table 7) ──
+const prompt = ['“Small animal and another', 'one bigger, both with the', 'shape of a fish, swimming', 'together.”'];
+const scores = [
+  { name: 'many manatees', p: 0.206 },
+  { name: 'mother and calf', p: 0.205 },
+  { name: 'one manatee', p: 0.201 },
+  { name: 'logs', p: 0.195 },
+  { name: 'background', p: 0.193 },
+].map((s, i) => ({ ...s, y: 118 + i * 88, w: r1((s.p / 0.25) * 300), top: i < 2 }));
+
+// ── steps 2 and 7: the lake ───────────────────────────────────────────────
+const train = lake.sequences.filter((s) => s.set === 'train');
+const test = lake.sequences.filter((s) => s.set === 'test');
+---
+
+<div class="dm">
+  <div class="dm-canvas">
+    <svg viewBox="0 0 800 600" role="presentation" focusable="false">
+      <defs>
+        <Fragment set:html={symbols} />
+        <radialGradient id="dm-lakelight" cx="0.42" cy="0.62" r="0.8">
+          <stop offset="0" stop-color="#6faea3"></stop>
+          <stop offset="0.6" stop-color="#5f9e94"></stop>
+          <stop offset="1" stop-color="#4a857c"></stop>
+        </radialGradient>
+        <linearGradient id="dm-depth" x1="0" y1="0" x2="0.35" y2="1">
+          <stop offset="0" stop-color="#8cc4b7" stop-opacity="0.35"></stop>
+          <stop offset="0.45" stop-color="#5f9e94" stop-opacity="0"></stop>
+          <stop offset="1" stop-color="#2f6259" stop-opacity="0.4"></stop>
+        </linearGradient>
+        <filter id="dm-silt" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="22"></feGaussianBlur></filter>
+        <clipPath id="dm-photo-clip"><rect x={photo.x} y={photo.y} width={photo.w} height={photo.h} rx="6"></rect></clipPath>
+        {insets.map((s) => <clipPath id={`dm-inset-${s.id}`}><circle cx={s.cx} cy={s.cy} r={s.r}></circle></clipPath>)}
+        <clipPath id="dm-pair-clip"><rect x="40" y="56" width="300" height="300" rx="8"></rect></clipPath>
+      </defs>
+
+      <!-- 1 and 8 · the lake in daylight, from above -->
+      <g data-l="air">
+        <rect width="800" height="600" fill="url(#dm-lakelight)"></rect>
+        <rect width="800" height="600" fill="url(#dm-depth)"></rect>
+        <!-- suspended silt: the lake is murky, lighter and darker in soft patches -->
+        <g filter="url(#dm-silt)">
+          <ellipse cx="560" cy="330" rx="150" ry="60" fill="#8cc4b7" opacity="0.22"></ellipse>
+          <ellipse cx="120" cy="560" rx="160" ry="60" fill="#2f6259" opacity="0.28"></ellipse>
+          <ellipse cx="300" cy="300" rx="120" ry="40" fill="#8cc4b7" opacity="0.16"></ellipse>
+          <ellipse cx="700" cy="560" rx="140" ry="50" fill="#2f6259" opacity="0.22"></ellipse>
+        </g>
+        <g fill="none" stroke="#eef4f0" stroke-linecap="round" opacity="0.13">
+          <path stroke-width="1.4" d="M96,300 q22,-5 44,0 q22,5 44,0 M612,452 q26,-6 52,0 M40,560 q20,-5 40,0 M470,566 q24,-6 48,0 M250,262 q16,-4 32,0 M600,318 q14,-4 28,0"></path>
+          <path stroke-width="1" d="M330,420 q14,-3 28,0 M700,520 q18,-4 36,0 M160,400 q12,-3 24,0 M560,560 q14,-3 28,0"></path>
+        </g>
+        <use href="#dm-shore-hero" x="0" y="0" width="800" height="220"></use>
+        <use href="#dm-hyacinth-hero" x="584" y="408" width="200" height="133.3"></use>
+        <use href="#dm-hyacinth-hero" x="26" y="440" width="160" height="106.7" transform="rotate(-14 106 493)"></use>
+        <use href="#dm-hyacinth-hero" x="190" y="236" width="104" height="69.3" transform="rotate(20 242 270)"></use>
+        <use href="#dm-log-hero" x="70" y="324" width="60" height="15" transform="rotate(-18 100 331)"></use>
+        <use href="#dm-log-hero" x="604" y="356" width="48" height="12" transform="rotate(28 628 362)"></use>
+        <!-- a fisherman's cayuco, to scale with the manatees (about 3.6 m) -->
+        <use href="#dm-boat-top" x="335" y="196" width="455" height="113.8"></use>
+        <g data-l="pair">
+          <use href="#dm-manatee-top-pair" x="150" y="318" width="400" height="225"></use>
+        </g>
+      </g>
+      <g data-l="s1">
+        <g data-l="s1-item" class="off">
+          <rect x="40" y="36" width="318" height="104" rx="8" fill="var(--dm-sand)" opacity="0.96"></rect>
+          <text x="60" y="86" class="num ink" font-size="42">1964</text>
+          <text x="60" y="120" class="lab ink">ten manatees released</text>
+        </g>
+        <g data-l="s1-item" class="off">
+          <rect x="442" y="36" width="318" height="104" rx="8" fill="var(--dm-sand)" opacity="0.96"></rect>
+          <text x="462" y="86" class="num ink" font-size="42">20 to 25</text>
+          <text x="462" y="120" class="lab ink">live here today</text>
+        </g>
+      </g>
+
+      <!-- 2 and 7 · Gatún Lake and its 44 survey areas -->
+      <g data-l="map" class="off">
+        <rect width="800" height="600" fill="var(--dm-land)"></rect>
+        <path d={lake.lake} fill="var(--dm-water)" fill-rule="evenodd"></path>
+        {lake.canal && <path d={lake.canal} fill="none" stroke="var(--dm-water)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></path>}
+        {lake.polygons.map((p) => (
+          <path data-l="poly" class="off" d={p.d} fill="var(--dm-on)" fill-opacity="0.1" stroke="var(--dm-on)" stroke-width="1.1" stroke-linejoin="round"></path>
+        ))}
+        <text data-l="maplabel" x="408" y="287" text-anchor="middle" class="lab caps soft">GATÚN LAKE</text>
+        <g data-l="lab436" class="off">
+          <text x="40" y="92" class="num" font-size="58">436 km²</text>
+          <text x="42" y="126" class="lab soft">44 survey areas</text>
+        </g>
+        <g data-l="scalebar" class="off">
+          <path d={`M40,566 h${lake.scale5km}`} stroke="var(--dm-on-2)" stroke-width="3" stroke-linecap="round"></path>
+          <text x={46 + lake.scale5km} y="574" class="lab soft small">5 km</text>
+        </g>
+      </g>
+
+      <rect data-l="night" class="off" width="800" height="600" fill="var(--dm-night)"></rect>
+
+      <!-- 3 · one survey area, flown in lines; a photo every few seconds -->
+      <g data-l="flight" class="off">
+        <path d={areaD} fill="var(--dm-water)" stroke="var(--dm-on)" stroke-width="1.5" stroke-linejoin="round" stroke-opacity="0.7"></path>
+        {snaps.map((s) => (
+          <rect data-l="snap" class="off" x={s.x - 21} y={s.y - 15} width="42" height="30" rx="2" fill="var(--dm-on)" fill-opacity="0.07" stroke="var(--dm-on)" stroke-width="1" stroke-opacity="0.55"></rect>
+        ))}
+        <path data-l="route" d={route} fill="none" stroke="var(--dm-on)" stroke-width="1.6" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.8"></path>
+        <g data-l="flight-key" class="off">
+          <rect x="40" y="544" width="34" height="24" rx="2" fill="var(--dm-on)" fill-opacity="0.07" stroke="var(--dm-on)" stroke-width="1" stroke-opacity="0.55"></rect>
+          <text x="86" y="564" class="lab soft small">one photo</text>
+          <path d="M226,556 h40" stroke="var(--dm-on)" stroke-width="1.6" stroke-dasharray="2 7" stroke-linecap="round" opacity="0.8"></path>
+          <text x="278" y="564" class="lab soft small">the drone’s flight line</text>
+        </g>
+        <g data-l="drone" class="off">
+          <use href="#dm-drone-top" x="-36" y="-36" width="72" height="72"></use>
+        </g>
+        {flown.map((f) => (
+          <g data-l="flown" class="off">
+            <text data-l={`n-${f.id}`} x="560" y={f.y} class="num" font-size="52">{f.text}</text>
+            <text x="562" y={f.y + 32} class="lab soft">{f.label}</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 4 · thousands of photos, then one: the animal is a speck -->
+      <g data-l="wall">
+        {wall.map((w) => <rect data-l="wall-photo" class="off" x={r1(w.x)} y={w.y} width="21.4" height="16" rx="1.5" fill="var(--dm-water-2)" fill-opacity={w.o}></rect>)}
+      </g>
+      <g data-l="photo" class="off">
+        <rect x={photo.x} y={photo.y} width={photo.w} height={photo.h} rx="6" fill="var(--dm-water)"></rect>
+        <g clip-path="url(#dm-photo-clip)">
+          <path d={ripples} fill="none" stroke="var(--dm-water-2)" stroke-width="1.5" stroke-linecap="round"></path>
+          <g style="color: var(--dm-hyacinth)" opacity="0.55"><use href="#dm-hyacinth" x="586" y="24" width="190" height="127"></use></g>
+          <g style="color: #b39a76">
+            {logs.map((l) => <use href="#dm-log-top" x={l.x - l.w / 2} y={l.y - l.w / 8} width={l.w} height={l.w / 4} transform={`rotate(${l.rot} ${l.x} ${l.y})`}></use>)}
+          </g>
+          <g style="color: var(--dm-hide)">
+            <use href="#dm-manatee-top" x={manatee.x - manatee.w / 2} y={manatee.y - manatee.w * 0.23} width={manatee.w} height={manatee.w * 0.46} transform={`rotate(${manatee.rot} ${manatee.x} ${manatee.y})`}></use>
+          </g>
+        </g>
+        <rect x={photo.x} y={photo.y} width={photo.w} height={photo.h} rx="6" fill="none" stroke="var(--dm-on-2)" stroke-width="1.2" opacity="0.6"></rect>
+        <!-- 5 · the tiles and the scan -->
+        {tiles.map((t) => <rect data-l="tile" class="off" x={t.x} y={t.y} width={T} height={T} fill="none" stroke="var(--dm-on)" stroke-width="1" stroke-opacity="0.5"></rect>)}
+        <rect data-l="scan" class="off" x={tiles[0].x} y={tiles[0].y} width={T} height={T} fill="var(--dm-find)" fill-opacity="0.16" stroke="var(--dm-find)" stroke-width="2.5" data-tiles={tiles.map((t) => `${r1(t.x - tiles[0].x)},${r1(t.y - tiles[0].y)}`).join(';')}></rect>
+        {boxes.map((b) => (
+          <g data-l="box" class="off" data-tile={b.tile}>
+            <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="3" fill="none" stroke={`var(--dm-${b.kind})`} stroke-width="3"></rect>
+            <rect x={b.x - 1.5} y={b.y - 31} width={b.tag} height="30" rx="3" fill={`var(--dm-${b.kind})`}></rect>
+            <text x={b.x + 8} y={b.y - 9} class="tag">{b.word}</text>
+          </g>
+        ))}
+        <!-- real crops from the paper's photos, enlarged -->
+        {insets.map((s) => (
+          <g data-l="inset" class="off">
+            <path d={`M${s.from[0]},${s.from[1]} L${s.to[0]},${s.to[1]}`} stroke="var(--dm-on)" stroke-width="1.5" stroke-dasharray="3 5" stroke-linecap="round"></path>
+            <image href={img(s.file)} x={s.cx - s.r} y={s.cy - s.r} width={s.r * 2} height={s.r * 2} clip-path={`url(#dm-inset-${s.id})`}></image>
+            <circle data-l={`inset-ring-${s.id}`} cx={s.cx} cy={s.cy} r={s.r} fill="none" stroke="var(--dm-on)" stroke-width="3"></circle>
+            <text x={s.side === 'left' ? s.cx - s.r - 12 : s.cx + s.r + 12} y={s.cy + 8} text-anchor={s.side === 'left' ? 'end' : 'start'} class="lab small">{s.label}</text>
+          </g>
+        ))}
+      </g>
+      <g data-l="strip">
+        <g data-l="strip-photos" class="off">
+          <text data-l="n-photos" x="40" y="566" class="num" font-size="52">0</text>
+          <text x="262" y="566" class="lab soft">photos</text>
+        </g>
+        <g data-l="strip-seen" class="off">
+          <text x="760" y="566" text-anchor="end" class="lab soft"><tspan class="num big bright">76</tspan> manatees seen</text>
+        </g>
+      </g>
+
+      <!-- 6 · which written description fits the photo best? -->
+      <g data-l="classify" class="off">
+        <rect width="800" height="600" fill="var(--dm-night)"></rect>
+        <image href={img('pair')} x="40" y="56" width="300" height="300" clip-path="url(#dm-pair-clip)"></image>
+        <image data-l="pair-y" class="off" href={img('pair-y')} x="40" y="56" width="300" height="300" clip-path="url(#dm-pair-clip)"></image>
+        <g data-l="prompt" class="off">
+          <rect x="40" y="384" width="300" height="190" rx="8" fill="var(--dm-land)" stroke="var(--dm-water-2)" stroke-width="1.2"></rect>
+          <text x="58" y="418" class="lab soft small">“mother and calf”, in words:</text>
+          {prompt.map((line, i) => <text x="58" y={452 + i * 29} class="lab quote">{line}</text>)}
+        </g>
+        <text data-l="score" class="off lab soft small" x="384" y="70">how well the photo fits each description</text>
+        {scores.map((s) => (
+          <g data-l="score" class="off">
+            {s.top && <circle cx="392" cy={s.y - 8} r="7" fill="var(--dm-find)"></circle>}
+            <text x={s.top ? 410 : 384} y={s.y} class={`lab ${s.top ? 'strong' : ''}`}>{s.name}</text>
+            <rect x="384" y={s.y + 16} width="300" height="14" rx="4" fill="var(--dm-land)"></rect>
+            <rect data-l="score-bar" data-w={s.w} x="384" y={s.y + 16} width="0" height="14" rx="4" fill={s.top ? 'var(--dm-find)' : 'var(--dm-on-2)'}></rect>
+            <text x="760" y={s.y + 30} text-anchor="end" class="num" font-size="26">{(s.p * 100).toFixed(1)}%</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 7 · found and missed, over the map -->
+      <g data-l="results">
+        {train.map((s) => (
+          <circle data-l="seq-train" class="off" cx={s.x} cy={s.y} r="6.5" fill={s.found ? 'var(--dm-find)' : 'var(--dm-land)'} fill-opacity={s.found ? 1 : 0.4} stroke={s.found ? 'var(--dm-night)' : 'var(--dm-on)'} stroke-width={s.found ? 1.5 : 2.6}></circle>
+        ))}
+        {test.map((s) => (
+          <circle data-l="seq-test" class="off" cx={s.x} cy={s.y} r="6.5" fill={s.found ? 'var(--dm-find)' : 'var(--dm-land)'} fill-opacity={s.found ? 1 : 0.4} stroke={s.found ? 'var(--dm-night)' : 'var(--dm-on)'} stroke-width={s.found ? 1.5 : 2.6}></circle>
+        ))}
+        <g data-l="res" class="off">
+          <text x="40" y="84" class="num" font-size="48">27 of 30</text>
+          <text x="42" y="114" class="lab soft">sequences found, flights it learned from</text>
+        </g>
+        <g data-l="res" class="off">
+          <text x="40" y="178" class="num" font-size="48">11 of 15</text>
+          <text x="42" y="208" class="lab soft">sequences found, unseen flights</text>
+        </g>
+        <g data-l="legend" class="off">
+          <circle cx="52" cy="244" r="6.5" fill="var(--dm-find)" stroke="var(--dm-night)" stroke-width="1.5"></circle>
+          <text x="68" y="252" class="lab small">found</text>
+          <circle cx="162" cy="244" r="6.5" fill="none" stroke="var(--dm-on)" stroke-width="2.6"></circle>
+          <text x="178" y="252" class="lab small">missed</text>
+        </g>
+      </g>
+
+      <!-- 8 · the survey, repeated: a drone passes over the mother and calf -->
+      <g data-l="end">
+        <g data-l="box8" class="off">
+          <rect x="160" y="336" width="334" height="192" rx="6" fill="none" stroke="var(--dm-find)" stroke-width="3.5"></rect>
+          <rect x="158" y="304" width="214" height="34" rx="4" fill="var(--dm-find)"></rect>
+          <text x="170" y="329" class="tag">mother and calf</text>
+        </g>
+        <g data-l="drone8" class="off">
+          <ellipse cx="9" cy="16" rx="28" ry="25" fill="#0f2422" opacity="0.14"></ellipse>
+          <use href="#dm-drone-top" x="-36" y="-36" width="72" height="72"></use>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .dm {
+    /* never taller than the space under the site header */
+    width: min(100%, calc((100svh - var(--header-h) - 3rem) * 4 / 3));
+    min-width: min(100%, 300px);
+    margin-inline: auto;
+  }
+  .dm-canvas {
+    position: relative; /* the WebGL light layer (gl.ts) is laid over the SVG */
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--dm-shallow);
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  .off {
+    opacity: 0;
+    visibility: hidden;
+  }
+  text {
+    fill: var(--dm-on);
+  }
+  .num {
+    font-weight: 680;
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .big {
+    font-size: 40px;
+  }
+  .bright {
+    fill: var(--dm-on);
+  }
+  .lab {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 22px;
+  }
+  .strong {
+    font-weight: 680;
+  }
+  .caps {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+  .quote {
+    font-style: italic;
+    font-size: 22px;
+  }
+  .tag {
+    font-size: 22px;
+    font-weight: 680;
+    fill: #0f2422;
+  }
+  .soft {
+    fill: var(--dm-on-2);
+  }
+  .ink {
+    fill: var(--ink);
+  }
+
+  @media (max-width: 900px) {
+    .dm {
+      width: min(100%, calc((100svh - var(--header-h) - 17rem) * 4 / 3));
+    }
+  }
+</style>

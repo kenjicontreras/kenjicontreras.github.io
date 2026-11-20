@@ -1,0 +1,60 @@
+{
+ "status": "real: Contreras, Verbel, Sanchez, Sanchez-Galan 2022, IEEE CONCAPAN (Sections II and IV, Table I)",
+ "corpus": {
+  "texts": 2086,
+  "collected": 2791,
+  "from": 2005,
+  "to": 2020
+ },
+ "lda": {
+  "topics": 17,
+  "coherence": "< 0.20",
+  "bags": [
+   [
+    "salud",
+    "médico",
+    "caja"
+   ],
+   [
+    "transporte",
+    "ambiente",
+    "ambiental"
+   ],
+   [
+    "electoral",
+    "partido",
+    "político"
+   ]
+  ]
+ },
+ "bertopic": {
+  "topics": 33,
+  "coherence": "> 0.45",
+  "diversity": 0.5,
+  "clusters": [
+   [
+    "radiología",
+    "dietilenglicol"
+   ],
+   [
+    "asuntos indígenas",
+    "tierra colectivo"
+   ],
+   [
+    "plenipotenciario",
+    "diplomático"
+   ]
+  ]
+ },
+ "health": {
+  "first": [
+   "salud pública",
+   "cirugía"
+  ],
+  "second": [
+   "dietilenglicol",
+   "río La Villa",
+   "humo"
+  ]
+ }
+}

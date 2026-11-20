@@ -1,0 +1,21 @@
+/* Story tokens for "vector-spectra". A laboratory at night: a dark instrument
+   bench, a pale spectrum trace, a violet laser. The two families of animals
+   are the only categories (--vs-mosq / --vs-tick), validated with the dataviz
+   skill's validate_palette.js on --vs-bench and, in the light pair, on
+   --vs-paper (see style.md). */
+.vs {
+  --vs-bench: #101a2b; /* dark stage */
+  --vs-panel: #1a2942; /* cards and instrument parts on the dark stage */
+  --vs-panel-2: #263a5c; /* lighter instrument parts, grid lines */
+  --vs-steel: #8fa0b8; /* metal: plate, tube, detector */
+  --vs-paper: #f4f1ea; /* light opening scene */
+  --vs-trace: #9be8d8; /* a mass spectrum. Nothing else. */
+  --vs-laser: #c79bff; /* the laser pulse and the ions it frees */
+  --vs-mosq: #2e93b8; /* mosquitoes on the dark stage */
+  --vs-tick: #c4832a; /* ticks on the dark stage */
+  --vs-mosq-light: #1f7fa3; /* the same pair on light surfaces */
+  --vs-tick-light: #b3741a;
+  --vs-alert: #c8452f; /* disease names only */
+  --vs-on: #e8eef7; /* primary text on the dark stage */
+  --vs-on-2: #a7b6cc; /* secondary text on the dark stage */
+}

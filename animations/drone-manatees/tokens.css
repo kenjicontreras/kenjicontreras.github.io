@@ -1,0 +1,24 @@
+/* Story tokens for "drone-manatees". They extend the site tokens in
+   src/styles/global.css with colours sampled from the paper's drone photos of
+   Gatún Lake: green lake water, forest canopy, pale animals, sun glare.
+   Categorical pair (--dm-find / --dm-other) validated with the dataviz skill's
+   validate_palette.js on --dm-water and --dm-night (see style.md). */
+.dm {
+  --dm-night: #0f2422; /* dark stage: the map and the photo viewer */
+  --dm-land: #16302b; /* land on the dark map */
+  --dm-water: #1c4744; /* lake on the map, and the water of the drawn photo */
+  --dm-water-2: #2a615c; /* lighter water accents: ripples, tile lines */
+  --dm-shallow: #5f9e94; /* lake seen from above in the daylight scenes */
+  --dm-shallow-2: #4a857c; /* its deeper tone */
+  --dm-canopy: #2f5138; /* forest from above */
+  --dm-canopy-2: #4d7350; /* lighter crowns */
+  --dm-hyacinth: #7fae5a; /* floating water plants */
+  --dm-hide: #cfd2c4; /* a manatee seen from the air: pale against the water */
+  --dm-log: #8a7150; /* floating logs */
+  --dm-sand: #f3f1e6; /* cream cards */
+  --dm-glare: #fff6d8; /* sun glitter (light layer) */
+  --dm-find: #c4832a; /* "the model says manatee": boxes and found sequences */
+  --dm-other: #2e93b8; /* "the model says log" */
+  --dm-on: #eaf3ee; /* primary text on the dark stage */
+  --dm-on-2: #a8c4b8; /* secondary text on the dark stage */
+}

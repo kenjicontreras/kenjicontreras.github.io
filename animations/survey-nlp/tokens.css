@@ -1,0 +1,28 @@
+/* Story tokens for "survey-nlp". A polling office: cream questionnaire paper,
+   navy ink, a dark navy stage for the model steps. The three topics are the
+   only categories, validated with the dataviz skill's validate_palette.js on
+   --sn-night and --sn-panel and, in the light trio, on --sn-cream (style.md).
+   Amber means "goes to review" and nothing else. */
+.sn {
+  --sn-cream: #f5f1e8; /* light stage */
+  --sn-card: #fffdf8; /* cards on cream */
+  --sn-night: #0f2130; /* dark stage */
+  --sn-panel: #1a3244; /* cards on the dark stage */
+  --sn-panel-2: #2a4a60; /* rules, empty bars */
+  --sn-on: #eaf2f5; /* primary text on dark */
+  --sn-on-2: #a9bfca; /* secondary text on dark */
+  --sn-t1: #a77bd6; /* Corrupción */
+  --sn-t2: #d9695c; /* Costo de vida */
+  --sn-t3: #2ea3b5; /* Seguridad */
+  --sn-t1-light: #7f4fb5; /* the same trio on cream */
+  --sn-t2-light: #c4503f;
+  --sn-t3-light: #0086a3;
+  --sn-flag: #e8a33a; /* goes to review, on dark */
+  --sn-flag-light: #a8700f; /* goes to review, on cream */
+  --sn-l1: #34536a; /* answer scale: Ninguna */
+  --sn-l2: #4f7590;
+  --sn-l3: #6f98b2;
+  --sn-l4: #97bcd2;
+  --sn-l5: #c3dce9; /* Mucha */
+  --sn-dk: #6d7f8a; /* No sabe / No responde */
+}

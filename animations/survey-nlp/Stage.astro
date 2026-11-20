@@ -1,0 +1,555 @@
+---
+// The stage for the survey-nlp story: one SVG (viewBox 800 × 600) holding a
+// layer per storyboard step. Everything is drawn here at build time; scene.ts
+// only moves and fades it. Layers are addressed with data-l="name".
+// Poll examples are invented; parliament words and counts are from the paper.
+import './tokens.css';
+import topics from './data/topics.json';
+import ent from './data/entropy.json';
+import batch from './data/batch.json';
+
+let seed = 2022; // deterministic, so builds are stable
+const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const r1 = (v: number) => Math.round(v * 10) / 10;
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
+const chipW = (s: string) => Math.round(s.length * 11.6 + 30);
+
+// Inline the SVG assets as <symbol>s so they can be recoloured with `color`.
+const raw = import.meta.glob<string>('./assets/svg/*.svg', { eager: true, query: '?raw', import: 'default' });
+const symbol = (name: string) => {
+  const m = raw[`./assets/svg/${name}.svg`].match(/<svg([^>]*)>([\s\S]*)<\/svg>/)!;
+  const viewBox = m[1].match(/viewBox="([^"]*)"/)![1];
+  const attrs = m[1].replace(/\s(xmlns|viewBox)="[^"]*"/g, '');
+  return `<symbol id="sn-${name}" viewBox="${viewBox}"><g${attrs}>${m[2]}</g></symbol>`;
+};
+const icons = ['clock', 'blank', 'entropy', 'grid', 'magnifier', 'sheet', 'tag', 'spark', 'scale', 'people'];
+const symbols = ['survey-form', 'proceedings-stack', 'field-interview', ...icons.map((i) => `icon-${i}`)].map(symbol).join('');
+
+// The three topics of the poll's codebook (colour = topic everywhere).
+const T = [
+  { k: 1, name: 'Corrupción' },
+  { k: 2, name: 'Costo de vida' },
+  { k: 3, name: 'Seguridad' },
+];
+
+// ── 1 · three projects as three cards; the same x positions frame the project bar ──
+const projects = [
+  { n: 1, title: 'Parliament topics', where: 'Research, 2022', bar: 'Parliament', x: 40 },
+  { n: 2, title: 'Open answers', where: 'CID Gallup', bar: 'Open answers', x: 284 },
+  { n: 3, title: 'Interview audits', where: 'CID Gallup', bar: 'Interview audits', x: 528 },
+];
+
+// ── 2 · 2,086 texts as tiles: a pattern fills the full rows, one rect the rest ──
+const TC = 47; // columns
+const TP = 7.6; // pitch
+const TX = 400;
+const TY = 92;
+const nTexts = topics.corpus.texts;
+const fullRows = Math.floor(nTexts / TC);
+const rest = nTexts - fullRows * TC;
+const tilesH = r1((fullRows + 1) * TP);
+
+// ── 3 · BERTopic: points gather into three clusters plus noise ────────────
+// a = scattered, b = clustered, c = (health cluster only) spread over time
+const centres = [
+  { x: 520, y: 210, label: topics.bertopic.clusters[0][1], gloss: 'poisoning scandal', lx: 520, ly: 138 },
+  { x: 690, y: 262, label: topics.bertopic.clusters[1][0], gloss: 'indigenous affairs', lx: 760, ly: 334, end: true },
+  { x: 528, y: 382, label: topics.bertopic.clusters[2][0], gloss: 'diplomats', lx: 470, ly: 436 },
+];
+// English glosses for the Spanish words, so the picture reads without Spanish.
+const bagGloss = ['health, doctors, social security', 'transport, environment', 'elections, parties'];
+const scatter = () => [r1(440 + rand() * 300), r1(140 + rand() * 260)];
+const pts = [
+  ...centres.flatMap((c, k) =>
+    Array.from({ length: 34 }, () => {
+      const t = rand() * Math.PI * 2;
+      const d = Math.sqrt(rand()) * 34;
+      const b = [r1(c.x + Math.cos(t) * d), r1(c.y + Math.sin(t) * d * 0.8)];
+      const cx = r1(100 + rand() * 600);
+      const c3 = k === 0 ? [cx, r1(400 - rand() * 46)] : b;
+      return { k: k + 1, a: scatter(), b, c: c3 };
+    }),
+  ),
+  ...Array.from({ length: 26 }, () => {
+    const p = scatter();
+    return { k: 0, a: p, b: [r1(p[0] + (rand() - 0.5) * 30), r1(p[1] + (rand() - 0.5) * 30)], c: p };
+  }),
+];
+
+// ── 4 · health words in each half of the timeline (paper §IV.B) ───────────
+const words = [
+  { w: topics.health.first[0], g: 'public health', x: 96, y: 146 },
+  { w: topics.health.first[1], g: 'surgery', x: 210, y: 246 },
+  { w: topics.health.second[0], g: 'diethylene glycol poisonings', x: 416, y: 140 },
+  { w: topics.health.second[1], g: 'La Villa river', x: 440, y: 250 },
+  { w: topics.health.second[2], g: 'smoke', x: 670, y: 236 },
+];
+
+// ── 5 · invented answers to "¿Cuál es el principal problema del país?" ────
+const answers = [
+  { q: 'Mucha corrupción', phrase: 'corrupción', t: 1 },
+  { q: 'Se roban la plata del pueblo', phrase: 'roban plata', t: 1 },
+  { q: 'Todo está carísimo', phrase: 'carísimo', t: 2 },
+  { q: 'No alcanza el sueldo', phrase: 'sueldo', t: 2 },
+  { q: 'Más seguridad en los barrios', phrase: 'seguridad', t: 3 },
+];
+
+// ── 6 · four signals for one answer (illustrative, no numbers shown) ──────
+const signals = [
+  { name: 'meaning', v: [0.86, 0.22, 0.12] },
+  { name: 'shared words', v: [0.04, 0.02, 0.0] },
+  { name: 'spelling', v: [0.18, 0.1, 0.08] },
+  { name: 'tone', tone: 0.78 },
+];
+const mix = [0.74, 0.2, 0.12];
+const cols = [
+  { h: 'respuesta', x: 40 },
+  { h: 'tema', x: 296 },
+  { h: 'código', x: 472 },
+];
+const sheetRows = [
+  { a: 'Se roban la plata…', t: 0, code: 1, on: true },
+  { a: 'Todo está carísimo', t: 1, code: 2, on: false },
+];
+
+// ── 7 · entropy of two respondents on a 7-item trust battery ──────────────
+const resp = ent.respondents.map((r, i) => {
+  const y = 186 + i * 196;
+  const counts = [1, 2, 3, 4, 5].map((v) => r.answers.filter((a) => a === v).length);
+  return { ...r, y, counts };
+});
+
+// ── 8 · the batch: four strips by z, then the score ───────────────────────
+type Iv = (typeof batch.interviews)[number];
+const iv = batch.interviews as Iv[];
+const feats = [
+  { name: 'time taken', icon: 'clock' },
+  { name: 'unanswered', icon: 'blank' },
+  { name: 'answer variety', icon: 'entropy' },
+  { name: 'same answer', icon: 'grid' },
+];
+const SX = 500; // batch average
+const SD = 80; // units per standard deviation
+const rowY = [146, 226, 306, 386];
+const jit = iv.map(() => r1((rand() - 0.5) * 26));
+// scaled to the batch's highest score, so the top of the queue sits at the "high" end
+const sMax = Math.max(...iv.map((x) => x.score));
+const scoreX = (s: number) => r1(260 + (s / sMax) * 480);
+
+// ── 9 · the review list: ranks 1–6, then the rows around the cut-off ──────
+const show = [0, 1, 2, 3, 4, 5, batch.top - 2, batch.top - 1, batch.top, batch.top + 1];
+const rows = show.map((idx, k) => {
+  const x = iv[idx];
+  const y = 98 + k * 42 + (k >= 6 ? 30 : 0) + (k >= 8 ? 44 : 0);
+  const max = x.part.indexOf(Math.max(...x.part));
+  return { rank: idx + 1, ...x, y, max };
+});
+const cutY = rows[7].y + 50;
+const people = batch.byInterviewer;
+---
+
+<div class="sn">
+  <div class="sn-canvas">
+    <svg viewBox="0 0 800 600" role="presentation" focusable="false">
+      <defs>
+        <Fragment set:html={symbols} />
+        <pattern id="sn-tile" x={TX} y={TY} width={TP} height={TP} patternUnits="userSpaceOnUse">
+          <rect width="5.6" height="6.4" rx="1" fill="var(--ink)" opacity="0.78"></rect>
+        </pattern>
+        <clipPath id="sn-tiles-clip"><rect data-l="tiles-clip" x={TX} y={TY} width="380" height="0"></rect></clipPath>
+      </defs>
+
+      <!-- 1 · three separate projects, one thread -->
+      <g data-l="overview">
+        <rect width="800" height="600" fill="var(--sn-cream)"></rect>
+        <text x="40" y="74" class="lab caps slate">THREE PROJECTS</text>
+        {projects.map((p) => (
+          <g data-l="ov-card">
+            <rect x={p.x} y="104" width="232" height="356" rx="8" fill="var(--sn-card)" stroke="var(--rule)" stroke-width="1.5"></rect>
+            <circle cx={p.x + 30} cy="136" r="16" fill="var(--teal)"></circle>
+            <text x={p.x + 30} y="144" text-anchor="middle" class="lab small strong" style="fill: #fff">{p.n}</text>
+            {p.n === 1 && <use href="#sn-proceedings-stack" x={p.x + 16} y="170" width="200" height="150"></use>}
+            {p.n === 2 && <use href="#sn-survey-form" x={p.x + 50} y="160" width="133" height="170"></use>}
+            {p.n === 3 && <use href="#sn-field-interview" x={p.x + 16} y="166" width="200" height="162"></use>}
+            <text x={p.x + 18} y="384" class="lab small ink strong">{p.title}</text>
+            <text x={p.x + 18} y="416" class="lab small slate">{p.where}</text>
+          </g>
+        ))}
+        <g data-l="ov-thread" class="off">
+          <!-- in sequence: the research leads to the first tool, then the second -->
+          <path d="M156,460 V496 H644 M400,496 V470 M644,496 V470" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M391,478 L400,465 L409,478 M635,478 L644,465 L653,478" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="156" cy="496" r="6" fill="var(--teal)"></circle>
+          <text x="278" y="524" text-anchor="middle" class="lab small slate">built on it</text>
+          <text x="522" y="524" text-anchor="middle" class="lab small slate">then</text>
+          <text x="400" y="568" text-anchor="middle" class="lab small ink">one thread: finding patterns in what people say</text>
+        </g>
+      </g>
+
+      <!-- 2 · the parliament archive: 2,086 texts -->
+      <g data-l="archive" class="off">
+        <rect width="800" height="600" fill="var(--sn-cream)"></rect>
+        <text x="40" y="74" class="lab caps slate">MY RESEARCH, 2022</text>
+        <use href="#sn-proceedings-stack" x="40" y="104" width="320" height="240"></use>
+        <text data-l="n-texts" x="40" y="428" class="num ink" font-size="64">0</text>
+        <text x="40" y="466" class="lab ink">texts, 2005 to 2020</text>
+        <text x="40" y="498" class="lab slate small">National Assembly of Panama</text>
+        <g clip-path="url(#sn-tiles-clip)">
+          <rect x={TX} y={TY} width={r1(TC * TP)} height={r1(fullRows * TP)} fill="url(#sn-tile)"></rect>
+          <rect x={TX} y={r1(TY + fullRows * TP)} width={r1(rest * TP)} height={TP} fill="url(#sn-tile)"></rect>
+        </g>
+        <text data-l="tiles-note" class="off lab slate small" x={TX} y={TY + tilesH + 34}>one tile per text, none sorted by hand</text>
+      </g>
+
+      <rect data-l="night" class="off" width="800" height="600" fill="var(--sn-night)"></rect>
+
+      <!-- 3 · LDA: words that occur together -->
+      <g data-l="lda" class="off">
+        <text x="40" y="74" class="lab strong">Method 1</text>
+        <text x="40" y="104" class="lab soft small">words that appear together</text>
+        {topics.lda.bags.map((bag, k) => (
+          <g data-l="bag" class="off">
+            <rect x="40" y={136 + k * 90} width="340" height="78" rx="8" fill="var(--sn-panel)" stroke="var(--sn-panel-2)" stroke-width="1.5"></rect>
+            <text x="60" y={168 + k * 90} class="lab small">{(k === 0 ? bag : bag.slice(0, 2)).join(' · ')}</text>
+            <text x="60" y={198 + k * 90} class="lab small soft">{bagGloss[k]}</text>
+          </g>
+        ))}
+        <g data-l="lda-total" class="off">
+          <text x="40" y="508" class="num" font-size="56">{topics.lda.topics}</text>
+          <text x="134" y="506" class="lab">topics</text>
+          <text x="40" y="544" class="lab soft small">broad themes</text>
+        </g>
+      </g>
+
+      <!-- 3 · BERTopic: passages close in meaning -->
+      <g data-l="bert" class="off">
+        <g data-l="b-meta">
+          <text x="430" y="74" class="lab strong">Method 2</text>
+          <text x="430" y="104" class="lab soft small">passages with similar meaning</text>
+        </g>
+        {pts.map((p) => (
+          <circle data-l="pt" data-k={p.k} data-a={p.a.join(',')} data-b={p.b.join(',')} data-c={p.c.join(',')} r={p.k ? 5.5 : 4} fill={p.k ? `var(--sn-t${p.k})` : 'var(--sn-panel-2)'}></circle>
+        ))}
+        {centres.map((c, k) => (
+          <text data-l={k === 0 ? 'b-label0' : 'b-label'} class="off lab small strong" x={c.lx} y={c.ly} text-anchor={c.end ? 'end' : 'start'}>
+            {c.label}
+            <tspan x={c.lx} dy="25" class="soft" style="font-weight: 500">{c.gloss}</tspan>
+          </text>
+        ))}
+        <g data-l="b-total" class="off">
+          <text x="430" y="508" class="num" font-size="56">{topics.bertopic.topics}</text>
+          <text x="524" y="506" class="lab">topics</text>
+          <text x="430" y="544" class="lab soft small">more specific themes</text>
+          <circle cx="436" cy="570" r="5.5" fill="var(--sn-t1)"></circle>
+          <text x="450" y="578" class="lab soft small">a passage</text>
+          <circle cx="580" cy="570" r="4" fill="var(--sn-panel-2)"></circle>
+          <text x="594" y="578" class="lab soft small">fits no topic</text>
+        </g>
+      </g>
+
+      <!-- 4 · the health topic over time -->
+      <g data-l="dtm" class="off">
+        <text x="40" y="74" class="lab caps soft">ONE TOPIC OVER TIME: HEALTH</text>
+        <circle cx="46" cy="104" r="5.5" fill="var(--sn-t1)"></circle>
+        <text x="60" y="112" class="lab soft small">a passage about health, placed by year</text>
+        <path d="M80,440 H720 M80,430 V450 M720,430 V450" stroke="var(--sn-on-2)" stroke-width="2" stroke-linecap="round"></path>
+        <path d="M400,150 V450" stroke="var(--sn-panel-2)" stroke-width="1.5" stroke-dasharray="4 6"></path>
+        <text x="80" y="484" class="lab soft small">2005</text>
+        <text x="720" y="484" class="lab soft small" text-anchor="end">2020</text>
+        <text x="240" y="530" class="lab soft small" text-anchor="middle">first half</text>
+        <text x="560" y="530" class="lab soft small" text-anchor="middle">second half</text>
+        {words.map((w) => (
+          <g data-l="word" class="off">
+            <rect x={w.x} y={w.y} width={chipW(w.w)} height="40" rx="20" fill="var(--sn-panel)" stroke="var(--sn-t1)" stroke-width="1.5"></rect>
+            <text x={w.x + 15} y={w.y + 27} class="lab small">{w.w}</text>
+            <text x={w.x + 15} y={w.y + 66} class="lab small soft">{w.g}</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 5 · the same idea on a poll: answers → phrases → codebook -->
+      <g data-l="code" class="off">
+        <rect width="800" height="600" fill="var(--sn-cream)"></rect>
+        <text x="40" y="74" class="lab ink quote">¿Cuál es el principal problema del país?</text>
+        <text x="40" y="126" class="lab slate small">answers</text>
+        <text data-l="phrase" class="off lab slate small" x="404" y="126">key phrases</text>
+        <g transform="translate(0 30)">
+        {answers.map((a, k) => (
+          <g>
+            <g data-l="answer" class="off">
+              <rect x="40" y={110 + k * 64} width="342" height="48" rx="8" fill="var(--sn-card)" stroke="var(--rule)" stroke-width="1.5"></rect>
+              <circle data-l="a-dot" class="off" cx="58" cy={134 + k * 64} r="7" fill={`var(--sn-t${a.t}-light)`}></circle>
+              <text x="74" y={142 + k * 64} class="lab ink quote small">{a.q}</text>
+            </g>
+            <g data-l="phrase" class="off">
+              <path d={`M388,${134 + k * 64} H400`} stroke="var(--slate)" stroke-width="1.5"></path>
+              <rect x="404" y={116 + k * 64} width={chipW(a.phrase)} height="36" rx="18" fill="var(--sn-card)" stroke="var(--slate)" stroke-width="1.5"></rect>
+              <text x="419" y={141 + k * 64} class="lab ink small">{a.phrase}</text>
+            </g>
+          </g>
+        ))}
+        <g data-l="codebook" class="off">
+          <rect x="574" y="110" width="186" height="304" rx="8" fill="var(--sn-card)" stroke="var(--ink)" stroke-width="2"></rect>
+          <g style="color: var(--ink)"><use href="#sn-icon-spark" x="590" y="126" width="26" height="26"></use></g>
+          <text x="624" y="148" class="lab ink strong small">Themes</text>
+          <path d="M590,166 H744" stroke="var(--rule)" stroke-width="1.5"></path>
+          {T.map((t, k) => (
+            <g data-l="cb-row" class="off">
+              <circle cx="600" cy={204 + k * 52} r="8" fill={`var(--sn-t${t.k}-light)`}></circle>
+              <text x="616" y={212 + k * 52} class="lab ink small">{t.name}</text>
+            </g>
+          ))}
+          <text x="590" y="378" class="lab slate small">AI proposes,</text>
+          <text x="590" y="402" class="lab slate small">analysts edit</text>
+        </g>
+        <text data-l="code-note" class="off lab slate small" x="40" y="470">key phrases + the question → a list of themes</text>
+        </g>
+      </g>
+
+      <!-- 6 · four signals score one answer; the result is spreadsheet columns -->
+      <g data-l="score" class="off">
+        <text x="40" y="78" class="lab quote">“Se roban la plata del pueblo”</text>
+        <text data-l="signal" class="off lab soft small" x="214" y="108">match with each theme</text>
+        {signals.map((s, k) => (
+          <g data-l="signal" class="off">
+            <text x="40" y={146 + k * 60} class="lab small">{s.name}</text>
+            {s.v ? (
+              s.v.map((v, j) => (
+                <g>
+                  <rect x="214" y={124 + k * 60 + j * 11} width="160" height="7" rx="3.5" fill="var(--sn-panel)"></rect>
+                  <rect data-l="sig-bar" data-w={r1(Math.max(v * 160, 3))} x="214" y={124 + k * 60 + j * 11} width="0" height="7" rx="3.5" fill={`var(--sn-t${j + 1})`}></rect>
+                </g>
+              ))
+            ) : (
+              <g>
+                <rect x="214" y={130 + k * 60} width="160" height="10" rx="5" fill="var(--sn-panel)"></rect>
+                <rect data-l="sig-bar" data-w={r1(s.tone! * 160)} x="214" y={130 + k * 60} width="0" height="10" rx="5" fill="var(--sn-on-2)"></rect>
+                <text x="214" y={170 + k * 60} class="lab soft small">negative</text>
+              </g>
+            )}
+          </g>
+        ))}
+        <g data-l="weights" class="off">
+          <g style="color: var(--sn-on-2)"><use href="#sn-icon-scale" x="440" y="118" width="30" height="30"></use></g>
+          <text x="480" y="142" class="lab soft small">combined</text>
+          {T.map((t, k) => (
+            <g>
+              <text x="440" y={196 + k * 50} class="lab small">{t.name}</text>
+              <rect x="604" y={180 + k * 50} width="156" height="20" rx="4" fill="var(--sn-panel)"></rect>
+              <rect data-l="mix-bar" data-w={r1(mix[k] * 156)} x="604" y={180 + k * 50} width="0" height="20" rx="4" fill={`var(--sn-t${t.k})`}></rect>
+            </g>
+          ))}
+        </g>
+        <g data-l="sheet" class="off">
+          <g style="color: var(--sn-on-2)"><use href="#sn-icon-sheet" x="40" y="392" width="26" height="26"></use></g>
+          <text x="76" y="413" class="lab soft small">the spreadsheet</text>
+          <rect x="40" y="430" width="720" height="132" rx="8" fill="var(--sn-panel)"></rect>
+          {cols.map((c) => <text x={c.x + 16} y="464" class="lab soft small">{c.h}</text>)}
+          {T.map((t, j) => <circle cx={600 + j * 60} cy="456" r="8" fill={`var(--sn-t${t.k})`}></circle>)}
+          <path d="M40,478 H760" stroke="var(--sn-panel-2)" stroke-width="1.5"></path>
+          {sheetRows.map((r, i) => (
+            <g data-l={r.on ? 'sheet-row' : undefined} opacity={r.on ? 1 : 0.55}>
+              <text x="56" y={510 + i * 36} class="lab small quote">{r.a}</text>
+              <text x="312" y={510 + i * 36} class="lab small">{T[r.t].name}</text>
+              <text x="488" y={510 + i * 36} class="lab small num">{r.code}</text>
+              {T.map((_, j) => <text x={600 + j * 60} y={510 + i * 36} text-anchor="middle" class="lab small num">{j === r.t ? 1 : 0}</text>)}
+            </g>
+          ))}
+        </g>
+      </g>
+
+      <!-- 7 · entropy: how varied are the answers? -->
+      <g data-l="ent" class="off">
+        <text x="40" y="74" class="lab soft small">trust in 7 institutions:</text>
+        <text x="306" y="74" class="lab soft small">Ninguna</text>
+        {[1, 2, 3, 4, 5].map((v) => <rect x={400 + (v - 1) * 30} y="56" width="24" height="24" rx="4" fill={`var(--sn-l${v})`}></rect>)}
+        <text x="556" y="74" class="lab soft small">Mucha</text>
+        <text data-l="hist-head" class="off lab soft small" x="390" y="118">how often each answer</text>
+        {resp.map((r, i) => (
+          <g data-l="resp" class="off">
+            <text x="40" y={r.y - 50} class="lab strong">Respondent {r.name}</text>
+            {r.answers.map((v, j) => (
+              <circle data-l={`dot${i}`} cx={56 + j * 44} cy={r.y} r="16" fill={`var(--sn-l${v})`}></circle>
+            ))}
+            {r.counts.map((c, v) => (
+              <g>
+                <rect x={390 + v * 34} y={r.y + 40} width="26" height="3" fill="var(--sn-panel-2)"></rect>
+                <rect data-l="hist" data-h={r1((c / 7) * 104)} x={390 + v * 34} y={r.y + 40} width="26" height="0" rx="3" fill={`var(--sn-l${v + 1})`}></rect>
+              </g>
+            ))}
+            <text x="598" y={r.y - 26} class="lab soft small">variety</text>
+            <rect x="598" y={r.y - 10} width="162" height="22" rx="5" fill="var(--sn-panel)"></rect>
+            <rect data-l="meter" data-w={r1(Math.max((r.bits / ent.max) * 162, 0))} x="598" y={r.y - 10} width="0" height="22" rx="5" fill="var(--sn-on)"></rect>
+            <text data-l="meter-label" class="off lab strong" x="598" y={r.y + 44}>{r.bits / ent.max > 0.8 ? 'high' : 'none'}</text>
+            {r.straight && (
+              <g data-l="straight" class="off">
+                <rect x="40" y={r.y + 34} width="190" height="38" rx="19" fill="none" stroke="var(--sn-flag)" stroke-width="2"></rect>
+                <text x="135" y={r.y + 60} text-anchor="middle" class="lab small">always the same</text>
+              </g>
+            )}
+          </g>
+        ))}
+        <text data-l="ent-max" class="off lab soft small" x="40" y="566">same answer every time = no variety = worth a check</text>
+      </g>
+
+      <!-- 8 · four features compared with the batch, folded into one score -->
+      <g data-l="rank" class="off">
+        <text x="260" y="88" class="lab soft small" text-anchor="middle">far below</text>
+        <text x={SX} y="88" class="lab soft small" text-anchor="middle">typical</text>
+        <text x="740" y="88" class="lab soft small" text-anchor="middle">far above</text>
+        <path d={`M260,106 V410 M740,106 V410`} stroke="var(--sn-panel-2)" stroke-width="1.5" stroke-dasharray="4 6"></path>
+        <path d={`M${SX},106 V410`} stroke="var(--sn-on-2)" stroke-width="1.5"></path>
+        {feats.map((f, k) => (
+          <g data-l="feat" class="off">
+            <g style="color: var(--sn-on-2)"><use href={`#sn-icon-${f.icon}`} x="40" y={rowY[k] - 15} width="28" height="28"></use></g>
+            <text x="78" y={rowY[k] + 8} class="lab small">{f.name}</text>
+            {iv.map((x, i) => (
+              <circle data-l="fdot" data-x={r1(SX + clamp(x.z[k], -3, 3) * SD)} data-out={Math.abs(x.z[k]) > 2 ? '1' : undefined} cx={SX} cy={rowY[k] + jit[i]} r="4.5" fill="var(--sn-on-2)" opacity="0.8"></circle>
+            ))}
+          </g>
+        ))}
+        <g data-l="score-row" class="off">
+          <path d="M40,438 H760" stroke="var(--sn-panel-2)" stroke-width="1.5"></path>
+          <text x="40" y="490" class="lab strong">review priority</text>
+          <path d="M260,482 H740" stroke="var(--sn-panel-2)" stroke-width="2" stroke-linecap="round"></path>
+          <text x="260" y="528" class="lab soft small" text-anchor="middle">low</text>
+          <text x="740" y="528" class="lab soft small" text-anchor="middle">high</text>
+          {iv.map((x, i) => (
+            <circle data-l="sdot" data-review={x.review ? '1' : undefined} cx={scoreX(x.score)} cy={482 + jit[i] * 0.7} r="5.5" fill="var(--sn-on-2)"></circle>
+          ))}
+        </g>
+        <g data-l="feat" class="off">
+          <circle cx="46" cy="554" r="5.5" fill="var(--sn-on-2)"></circle>
+          <text x="60" y="562" class="lab soft small">one interview</text>
+        </g>
+        <g data-l="out-key" class="off">
+          <circle cx="238" cy="554" r="6" fill="var(--sn-on)"></circle>
+          <text x="252" y="562" class="lab soft small">unusual</text>
+        </g>
+        <g data-l="cut" class="off">
+          <rect x="378" y="546" width="16" height="16" rx="8" fill="var(--sn-flag)"></rect>
+          <text x="402" y="562" class="lab small">top third: {batch.top} of {iv.length} to review</text>
+        </g>
+      </g>
+
+      <!-- 9 · the review queue, with the reason for each rank -->
+      <g data-l="queue" class="off">
+        <rect width="800" height="600" fill="var(--sn-cream)"></rect>
+        <text x="40" y="74" class="lab caps slate">REVIEW LIST</text>
+        {feats.map((f, j) => (
+          <g style="color: var(--slate)"><use href={`#sn-icon-${f.icon}`} x={238 + j * 30} y="52" width="24" height="24"></use></g>
+        ))}
+        <text x="444" y="74" text-anchor="end" class="lab slate small">score</text>
+        {rows.map((r, k) => (
+          <g data-l="q-row" class="off">
+            <rect x="40" y={r.y} width="420" height="38" rx="6" fill="var(--sn-card)" stroke={r.review ? 'var(--sn-flag-light)' : 'var(--rule)'} stroke-width={r.review ? 2 : 1.5}></rect>
+            <text x="56" y={r.y + 27} class="lab ink small num">{r.rank}</text>
+            <text x="104" y={r.y + 27} class="lab ink small">{r.id}</text>
+            {r.part.map((p, j) => (
+              <rect x={240 + j * 30} y={r1(r.y + 32 - Math.max(p * 26, 2))} width="20" height={r1(Math.max(p * 26, 2))} rx="2" fill={j === r.max ? 'var(--sn-flag-light)' : 'var(--slate)'} opacity={j === r.max ? 1 : 0.55}></rect>
+            ))}
+            <text x="444" y={r.y + 27} text-anchor="end" class="lab ink small num">{r.score.toFixed(2)}</text>
+          </g>
+        ))}
+        <text data-l="q-gap" class="off lab slate" x="104" y={rows[5].y + 66}>⋮</text>
+        <g data-l="q-cut" class="off">
+          <path d={`M40,${cutY} H460`} stroke="var(--sn-flag-light)" stroke-width="2" stroke-dasharray="6 5"></path>
+          <text x="56" y={cutY + 26} class="lab slate small">↑ top third goes to review</text>
+        </g>
+        <g data-l="q-side" class="off">
+          <use href="#sn-field-interview" x="492" y="62" width="268" height="217"></use>
+          <g style="color: var(--ink)"><use href="#sn-icon-people" x="492" y="306" width="26" height="26"></use></g>
+          <text x="528" y="327" class="lab ink small strong">flagged, by interviewer</text>
+          {people.map((p, k) => (
+            <g>
+              <text x="492" y={370 + k * 34} class="lab ink small">{p.name}</text>
+              <rect x="524" y={354 + k * 34} width={p.total * 11} height="18" rx="4" fill="var(--rule)"></rect>
+              <rect data-l="p-bar" data-w={p.flagged * 11} x="524" y={354 + k * 34} width="0" height="18" rx="4" fill="var(--sn-flag-light)"></rect>
+              <text x="760" y={370 + k * 34} text-anchor="end" class="lab slate small num">{p.flagged} of {p.total}</text>
+            </g>
+          ))}
+        </g>
+      </g>
+      <!-- which project is on screen (steps 2 to 9) -->
+      <g data-l="pbar" class="off">
+        {projects.map((p) => (
+          <g>
+            <rect x={p.x} y="10" width="232" height="34" rx="17" fill="none" stroke="#8aa0ab" stroke-width="1.5"></rect>
+            <text x={p.x + 116} y="34" text-anchor="middle" class="lab small" style="fill: #8aa0ab">{p.n} {p.bar}</text>
+            <g data-l={`pb-on`} class="off">
+              <rect x={p.x} y="10" width="232" height="34" rx="17" fill="var(--teal)"></rect>
+              <text x={p.x + 116} y="34" text-anchor="middle" class="lab small strong" style="fill: #fff">{p.n} {p.bar}</text>
+            </g>
+          </g>
+        ))}
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .sn {
+    /* never taller than the space under the site header */
+    width: min(100%, calc((100svh - var(--header-h) - 3rem) * 4 / 3));
+    min-width: min(100%, 300px);
+    margin-inline: auto;
+  }
+  .sn-canvas {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--sn-cream);
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  .off {
+    opacity: 0;
+    visibility: hidden;
+  }
+  text {
+    fill: var(--sn-on);
+  }
+  .num {
+    font-weight: 680;
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .lab {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 22px;
+  }
+  .strong {
+    font-weight: 650;
+  }
+  .quote {
+    font-style: italic;
+  }
+  .caps {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+  .soft {
+    fill: var(--sn-on-2);
+  }
+  .ink {
+    fill: var(--ink);
+  }
+  .slate {
+    fill: var(--slate);
+  }
+
+  @media (max-width: 900px) {
+    .sn {
+      width: min(100%, calc((100svh - var(--header-h) - 17rem) * 4 / 3));
+    }
+  }
+</style>

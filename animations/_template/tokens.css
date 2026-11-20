@@ -1,0 +1,5 @@
+/* Story tokens. Scope them to the stage's root class so stories never clash. */
+.xx {
+  --xx-deep: #0b2230;
+  --xx-signal: #d7e26a;
+}

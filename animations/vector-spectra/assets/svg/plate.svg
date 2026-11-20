@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160">
+<defs>
+<linearGradient id="vsp-steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c5cfdd"/><stop offset=".38" stop-color="#8fa0b8"/><stop offset=".52" stop-color="#b3c0d1"/><stop offset=".66" stop-color="#8fa0b8"/><stop offset="1" stop-color="#6f7f98"/></linearGradient>
+<radialGradient id="vsp-well" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#7b8ba4"/><stop offset="1" stop-color="#9aabc2"/></radialGradient>
+<g id="vsp-row"><circle cx="40" r="6.8"/><circle cx="62.9" r="6.8"/><circle cx="85.7" r="6.8"/><circle cx="108.6" r="6.8"/><circle cx="131.4" r="6.8"/><circle cx="154.3" r="6.8"/><circle cx="177.1" r="6.8"/><circle cx="200" r="6.8"/></g>
+</defs>
+<rect x="8" y="12" width="224" height="136" rx="10" fill="#5d6c85"/>
+<rect x="8" y="8" width="224" height="136" rx="10" fill="url(#vsp-steel)"/>
+<rect x="9.5" y="9.5" width="221" height="133" rx="8.5" fill="none" stroke="#e2e8f0" stroke-width="1.2" opacity=".6"/>
+<g fill="url(#vsp-well)" stroke="#5d6c85" stroke-width="1.1">
+<use href="#vsp-row" y="28"/><use href="#vsp-row" y="50"/><use href="#vsp-row" y="72"/><use href="#vsp-row" y="94"/><use href="#vsp-row" y="116"/>
+</g>
+<g fill="#ece6d8" stroke="#cfc4ae" stroke-width="1.2"><circle cx="40" cy="28" r="4.8"/><circle cx="62.9" cy="28" r="4.8"/><circle cx="85.7" cy="28" r="4.8"/><circle cx="40" cy="50" r="4.8"/></g>
+</svg>

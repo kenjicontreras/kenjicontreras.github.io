@@ -1,0 +1,238 @@
+/* ─────────────────────────────────────────────────────────
+   Tokens. Light, clear palette built from teal and navy.
+   Archivo for headings and UI (its width axis does the display
+   work); Source Serif 4 for the page's reading text. The serif is
+   applied by selector only, never to body, so the scroll stories
+   keep Archivo.
+   ───────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --paper: #f7fafb;
+  --panel: #ecf4f5;
+  --lagoon: #ddf1ef;
+  --rule: #d3e0e4;
+  --ink: #0e2a3a; /* 14.6:1 on paper */
+  --slate: #4e6874; /* 5.9:1 on paper */
+  --teal: #0a7c7e; /* 5.0:1 on paper — links, actions */
+  --teal-deep: #075e60;
+  --navy: #0e2a3a;
+  --sand: #f5f1e8; /* the stories' cream paper, used as one page ground */
+
+  --font: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --font-text: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif;
+
+  /* type scale (classic 1.125–1.333 steps) */
+  --step--1: 0.875rem;
+  --step-0: 1.0625rem;
+  --step-1: 1.25rem;
+  --step-2: 1.5rem;
+  --step-3: clamp(1.75rem, 1.4rem + 1.4vw, 2.25rem);
+  --step-4: clamp(2.25rem, 1.6rem + 2.6vw, 3.25rem);
+  --step-5: clamp(2.5rem, 1.5rem + 3.6vw, 4.25rem);
+
+  --max: 90rem;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --header-h: 68px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 12px);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  font-stretch: 100%;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--teal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+a:hover {
+  color: var(--teal-deep);
+}
+/* Links outside running copy draw their underline on hover. */
+.draw {
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat 0 calc(50% + 0.75em) / 0 1px;
+  transition: background-size 220ms ease-out, color 160ms;
+}
+.draw:hover {
+  background-size: 100% 1px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 3px;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 650;
+  font-stretch: 118%;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+h2 {
+  font-size: var(--step-4);
+}
+h3 {
+  font-size: var(--step-2);
+  line-height: 1.2;
+  font-stretch: 108%;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.wrap {
+  width: min(100% - 2 * var(--gutter), var(--max));
+  margin-inline: auto;
+}
+
+/* Sections are separated by a rule or a change of ground; each
+   component sets its own padding to fit what it holds. */
+.block {
+  padding-block: clamp(4rem, 8vw, 6.5rem);
+  border-top: 1px solid var(--rule);
+}
+.block-sand {
+  background: var(--sand);
+  border-top-color: transparent;
+}
+
+/* Section heading: one column, the heading with an optional short
+   line under it. Section h2s are quieter than the hero's h1. */
+.block-head {
+  margin-bottom: clamp(2rem, 5vw, 3.5rem);
+}
+.block-head h2,
+.sec-title {
+  font-size: var(--step-4);
+  font-stretch: 108%;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.block-head p {
+  margin-top: 0.9rem;
+  color: var(--slate);
+  font-family: var(--font-text);
+  font-size: var(--step-1);
+  line-height: 1.5;
+  max-width: 52ch;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0.75rem 1.4rem;
+  border-radius: 4px;
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 160ms,
+    color 160ms,
+    border-color 160ms,
+    transform 160ms;
+}
+/* Buttons step up on hover and press back on click. */
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(1px);
+  transition-duration: 60ms;
+}
+.btn-solid {
+  background: var(--navy);
+  color: #fff;
+}
+.btn-solid:hover {
+  background: var(--teal-deep);
+  color: #fff;
+}
+.btn-line {
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+}
+.btn-line:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.chips li {
+  font-size: var(--step--1);
+  padding: 0.25rem 0.6rem;
+  background: var(--panel);
+  color: var(--ink);
+  border-radius: 3px;
+}
+
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -100px;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--navy);
+  color: #fff;
+}
+.skip:focus {
+  top: 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

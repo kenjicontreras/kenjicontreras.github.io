@@ -1,0 +1,66 @@
+{
+  "status": "Cropped and recoloured from Guzman et al. 2025, Fig. 2 (CC BY 4.0). Colour ramp changed; data unchanged.",
+  "credit": "Spectrograms: Guzman et al. 2025, Front. Mar. Sci. 12:1661294, Fig. 2, CC BY 4.0 (recoloured).",
+  "axes": {
+    "x": "time, about 0.4 s",
+    "y": "frequency, 0 to 48 kHz"
+  },
+  "items": [
+    {
+      "file": "spec-m13-1.webp",
+      "individual": "M13",
+      "set": "2024 validation (captured manatees)",
+      "panel": "A2",
+      "contour": "flat"
+    },
+    {
+      "file": "spec-m13-2.webp",
+      "individual": "M13",
+      "set": "2024 validation (captured manatees)",
+      "panel": "A3",
+      "contour": "flat"
+    },
+    {
+      "file": "spec-m11-1.webp",
+      "individual": "M11",
+      "set": "2024 validation (captured manatees)",
+      "panel": "B3",
+      "contour": "hill"
+    },
+    {
+      "file": "spec-m11-2.webp",
+      "individual": "M11",
+      "set": "2024 validation (captured manatees)",
+      "panel": "B4",
+      "contour": "hill"
+    },
+    {
+      "file": "spec-p63-1.webp",
+      "individual": "P63",
+      "set": "this study, Panama",
+      "panel": "C3",
+      "contour": "flat"
+    },
+    {
+      "file": "spec-p63-2.webp",
+      "individual": "P63",
+      "set": "this study, Panama",
+      "panel": "C4",
+      "contour": "hill"
+    },
+    {
+      "file": "spec-p15-1.webp",
+      "individual": "P15",
+      "set": "this study, Panama",
+      "panel": "D3",
+      "contour": "hill"
+    },
+    {
+      "file": "spec-p15-2.webp",
+      "individual": "P15",
+      "set": "this study, Panama",
+      "panel": "D4",
+      "contour": "flat"
+    }
+  ]
+}

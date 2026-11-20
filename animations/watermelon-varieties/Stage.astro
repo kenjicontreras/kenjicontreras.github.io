@@ -1,0 +1,349 @@
+---
+// The stage for the watermelon-varieties story: one SVG (viewBox 800 × 600)
+// holding a layer per storyboard step.
+// Everything is drawn here at build time; scene.ts only moves and fades it.
+// Layers are addressed with data-l="name" (see storyboard.md).
+import type { ImageMetadata } from 'astro';
+import './tokens.css';
+import results from './data/results.json';
+import embedding from './data/embedding.json';
+
+let seed = 9831572; // deterministic, so builds are stable
+const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const r1 = (v: number) => Math.round(v * 10) / 10;
+
+// Inline the SVG assets as <symbol>s so they can be recoloured with `color`.
+const raw = import.meta.glob<string>('./assets/svg/*.svg', { eager: true, query: '?raw', import: 'default' });
+const symbol = (name: string) => {
+  const m = raw[`./assets/svg/${name}.svg`].match(/<svg([^>]*)>([\s\S]*)<\/svg>/)!;
+  const viewBox = m[1].match(/viewBox="([^"]*)"/)![1];
+  const attrs = m[1].replace(/\s(xmlns|viewBox)="[^"]*"/g, '');
+  return `<symbol id="wv-${name}" viewBox="${viewBox}"><g${attrs}>${m[2]}</g></symbol>`;
+};
+const symbols = ['melon-whole', 'melon-slice', 'melon-mini', 'crate', 'camera-arch', 'icon-lock', 'icon-spark'].map(symbol).join('');
+
+const photos = import.meta.glob<{ default: ImageMetadata }>('./assets/img/*.webp', { eager: true });
+const img = (name: string) => photos[`./assets/img/${name}.webp`].default.src;
+
+type Id = 'anna' | 'joya' | 'quetzali';
+const varieties: { id: Id; name: string }[] = [
+  { id: 'anna', name: 'Anna' },
+  { id: 'joya', name: 'Joya' },
+  { id: 'quetzali', name: 'Quetzali' },
+];
+const n = results.photos as Record<Id, number>;
+
+// ── step 1: three crates of fruit nobody has named yet ────────────────────
+const crates = [40, 288, 536];
+
+// ── step 3: one square per photo, in three uneven groups ──────────────────
+const greens = ['#2b5a34', '#3a6a3c', '#24492b', '#4c7a3d', '#2f6238'];
+let top = 124;
+const groups = varieties.map((v) => {
+  const rows = Math.ceil(n[v.id] / 15);
+  const y = top;
+  top += rows * 15 + 20;
+  const squares = Array.from({ length: n[v.id] }, (_, i) => ({
+    x: 40 + (i % 15) * 15,
+    y: y + Math.floor(i / 15) * 15,
+    fill: greens[Math.floor(rand() * greens.length)],
+  }));
+  return { ...v, y, rows, squares };
+});
+
+// ── step 4: a frozen network, a small trained head ────────────────────────
+const layers = Array.from({ length: 6 }, (_, i) => ({ x: 212 + i * 42, h: 196 - i * 22 }));
+const chips = [
+  { name: 'VGG19', x: 190, w: 112, kept: false },
+  { name: 'ResNet50', x: 316, w: 144, kept: false },
+  { name: 'EfficientNetB0', x: 474, w: 212, kept: true },
+];
+
+// ── step 5: the 100 test photos as points ─────────────────────────────────
+const G = embedding.groups as Record<Id, { x: number; y: number; r: number }>;
+const pts = embedding.points as { truth: Id; said: Id; a: number[]; b: number[] }[];
+
+// ── step 6: correct answers per variety, both methods (real counts) ───────
+const panels = [
+  { id: 'transfer', title: 'Method 1: borrowed eye', acc: '84%', x: 40 },
+  { id: 'metric', title: 'Method 2: similarity map', acc: '81%', x: 420 },
+].map((p) => ({
+  ...p,
+  rows: varieties.map((v, k) => {
+    const row = (results.confusion as Record<string, Record<Id, number[]>>)[p.id][v.id];
+    const total = row.reduce((a, b) => a + b, 0);
+    return { ...v, y: 236 + k * 96, right: row[k], total, w: r1((row[k] / total) * 200) };
+  }),
+}));
+
+// ── step 7: fruit on the belt; the ones past the camera carry a name ──────
+const fruit = [
+  { cx: 96, v: null },
+  { cx: 400, v: null },
+  { cx: 598, v: varieties[1], tag: 92 },
+  { cx: 726, v: varieties[2], tag: 136 },
+] as { cx: number; v: { id: Id; name: string } | null; tag?: number }[];
+---
+
+<div class="wv">
+  <div class="wv-canvas">
+    <svg viewBox="0 0 800 600" role="presentation" focusable="false">
+      <defs>
+        <Fragment set:html={symbols} />
+        <clipPath id="wv-patch-clip"><rect x="40" y="235" width="100" height="100" rx="6"></rect></clipPath>
+        <clipPath id="wv-pixel-clip"><rect x="520" y="150" width="230" height="230" rx="6"></rect></clipPath>
+        <pattern id="wv-pixel-grid" x="520" y="150" width="5.75" height="5.75" patternUnits="userSpaceOnUse">
+          <path d="M5.75,0 V5.75 H0" fill="none" stroke="#f6f2e6" stroke-width="0.5" opacity="0.35"></path>
+        </pattern>
+      </defs>
+
+      <!-- 1 · the packing shed: fruit on a table, crates waiting to be sorted -->
+      <g data-l="shed">
+        <rect width="800" height="600" fill="var(--wv-cream)"></rect>
+        <rect x="0" y="318" width="800" height="10" fill="var(--wv-crate-2)" opacity="0.35"></rect>
+        <use href="#wv-melon-whole" x="44" y="146" width="222" height="177.6"></use>
+        <use href="#wv-melon-whole" x="262" y="84" width="300" height="240"></use>
+        <use href="#wv-melon-slice" x="566" y="204" width="194" height="121.3"></use>
+        {crates.map((x) => (
+          <g>
+            <use href="#wv-melon-whole" x={x + 4} y="372" width="124" height="99.2"></use>
+            <use href="#wv-melon-whole" x={x + 98} y="366" width="124" height="99.2"></use>
+            <use href="#wv-crate" x={x} y="420" width="224" height="140"></use>
+          </g>
+        ))}
+        {crates.map((x) => (
+          <g data-l="s1-item" class="off">
+            <rect x={x + 76} y="462" width="72" height="56" rx="6" fill="#fff" stroke="var(--wv-crate-2)" stroke-width="1.5"></rect>
+            <text x={x + 112} y="504" text-anchor="middle" class="num ink" font-size="38">?</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 2 · the three varieties, as photographed for the study -->
+      <g data-l="varieties" class="off">
+        <rect width="800" height="600" fill="var(--wv-cream)"></rect>
+        {varieties.map((v, i) => (
+          <g data-l="variety" class="off">
+            <image href={img(`var-${v.id}`)} x={24 + i * 258} y="84" width="236" height="190" preserveAspectRatio="xMidYMid meet"></image>
+            <circle cx={24 + i * 258 + 118 - 54} cy="322" r="9" fill={`var(--wv-${v.id}-light)`}></circle>
+            <text x={24 + i * 258 + 118 - 36} y="331" class="lab ink strong">{v.name}</text>
+            <text x={24 + i * 258 + 118} y="366" text-anchor="middle" class="lab slate small">{n[v.id]} photos</text>
+            <image href={img(`patch-${v.id}`)} x={24 + i * 258 + 62} y="404" width="112" height="112" class="pixelated"></image>
+            <rect x={24 + i * 258 + 62} y="404" width="112" height="112" fill="none" stroke="var(--ink)" stroke-width="1.5"></rect>
+          </g>
+        ))}
+        <text data-l="variety-note" class="off lab slate small" x="400" y="560" text-anchor="middle">a patch of rind from each, as the model receives it</text>
+      </g>
+
+      <!-- 3 · one square per photo; one photo as the model receives it -->
+      <g data-l="count" class="off">
+        <rect width="800" height="600" fill="var(--wv-cream)"></rect>
+        <text data-l="n-photos" x="40" y="88" class="num ink" font-size="56">0</text>
+        <text x="170" y="88" class="lab slate">photos</text>
+        {groups.map((g) => (
+          <g>
+            {g.squares.map((s) => <rect data-l="sq" class="off" x={s.x} y={s.y} width="12" height="12" rx="2" fill={s.fill}></rect>)}
+            <g data-l="group-label" class="off">
+              <circle cx="292" cy={g.y + 14} r="9" fill={`var(--wv-${g.id}-light)`}></circle>
+              <text x="310" y={g.y + 23} class="lab ink strong">{g.name}</text>
+              <text x="310" y={g.y + 52} class="lab slate small">{n[g.id]} photos</text>
+            </g>
+          </g>
+        ))}
+        <g data-l="sq-key" class="off">
+          <rect x="40" y="540" width="12" height="12" rx="2" fill="#3a6a3c"></rect>
+          <text x="62" y="552" class="lab slate small">one photo</text>
+        </g>
+        <g data-l="pixel" class="off">
+          <image href={img('patch-joya')} x="520" y="150" width="230" height="230" clip-path="url(#wv-pixel-clip)" class="pixelated"></image>
+          <rect x="520" y="150" width="230" height="230" rx="6" fill="url(#wv-pixel-grid)"></rect>
+          <rect x="520" y="150" width="230" height="230" rx="6" fill="none" stroke="var(--ink)" stroke-width="2"></rect>
+          <text x="520" y="420" class="lab ink strong">40 × 40 pixels</text>
+          <text x="520" y="450" class="lab slate small">what the model sees</text>
+        </g>
+      </g>
+
+      <rect data-l="night" class="off" width="800" height="600" fill="var(--wv-night)"></rect>
+
+      <!-- 4 · transfer learning: a frozen, pre-trained network and a small trained part -->
+      <g data-l="transfer" class="off">
+        <text x="40" y="74" class="lab caps soft">METHOD 1</text>
+        <g data-l="t-part" class="off">
+          <image href={img('patch-anna')} x="40" y="235" width="100" height="100" clip-path="url(#wv-patch-clip)" class="pixelated"></image>
+          <text x="40" y="366" class="lab soft small">a photo</text>
+        </g>
+        <g data-l="t-part" class="off">
+          <rect x="190" y="160" width="286" height="250" rx="10" fill="var(--wv-panel)" stroke="var(--wv-panel-2)" stroke-width="1.5"></rect>
+          {layers.map((l) => <rect x={l.x} y={285 - l.h / 2} width="24" height={l.h} rx="4" fill="var(--wv-panel-2)"></rect>)}
+          <g style="color: var(--wv-on-2)"><use href="#wv-icon-lock" x="430" y="170" width="34" height="34"></use></g>
+          <text x="190" y="444" class="lab">already trained</text>
+          <text x="190" y="472" class="lab soft small">on everyday photos; frozen</text>
+        </g>
+        <g data-l="t-part" class="off">
+          <rect x="508" y="225" width="104" height="120" rx="10" fill="var(--wv-panel)" stroke="var(--wv-on)" stroke-width="2.5"></rect>
+          <rect x="530" y="251" width="20" height="68" rx="4" fill="var(--wv-on)"></rect>
+          <rect x="570" y="263" width="20" height="44" rx="4" fill="var(--wv-on)"></rect>
+          <g style="color: var(--wv-on)"><use href="#wv-icon-spark" x="576" y="188" width="32" height="32"></use></g>
+          <text x="508" y="376" class="lab small">trained</text>
+          <text x="508" y="402" class="lab small">here</text>
+        </g>
+        <g data-l="t-part" class="off">
+          {varieties.map((v, k) => (
+            <g data-l="t-out" data-id={v.id} opacity={k === 0 ? 1 : 0.45}>
+              <circle cx="654" cy={245 + k * 40} r="8" fill={`var(--wv-${v.id})`}></circle>
+              <text x="670" y={253 + k * 40} class="lab small">{v.name}</text>
+            </g>
+          ))}
+        </g>
+        <path d="M148,285 H182 M484,285 H500 M620,285 H638" stroke="var(--wv-on-2)" stroke-width="2.5" stroke-linecap="round"></path>
+        <circle data-l="t-pulse" class="off" cx="150" cy="285" r="7" fill="var(--wv-on)"></circle>
+        <text data-l="t-chip" class="off lab soft small" x="40" y="548">compared:</text>
+        {chips.map((c) => (
+          <g data-l="t-chip" class="off">
+            <rect data-kept={c.kept ? '1' : undefined} x={c.x} y="520" width={c.w} height="40" rx="20" fill="var(--wv-panel)" stroke="var(--wv-on-2)" stroke-width="1.5"></rect>
+            <text x={c.x + c.w / 2} y="548" text-anchor="middle" class="lab small">{c.name}</text>
+          </g>
+        ))}
+        <text data-l="t-kept" class="off lab small" x="698" y="548">✓ kept</text>
+      </g>
+
+      <!-- 5 · metric learning: the test photos as points that gather by variety -->
+      <g data-l="metric" class="off">
+        <text x="40" y="74" class="lab caps soft">METHOD 2</text>
+        {varieties.map((v) => (
+          <g data-l="m-ring" class="off">
+            <circle cx={G[v.id].x} cy={G[v.id].y} r={G[v.id].r} fill="none" stroke={`var(--wv-${v.id})`} stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"></circle>
+            <text x={G[v.id].x} y={v.id === 'joya' ? G[v.id].y + G[v.id].r + 30 : G[v.id].y - G[v.id].r - 12} text-anchor="middle" class="lab small">{v.name}</text>
+          </g>
+        ))}
+        {pts.map((p) => (
+          <circle data-l="m-pt" class="off" data-wrong={p.truth !== p.said ? '1' : undefined} data-a={p.a.join(',')} data-b={p.b.join(',')} r="6.5" fill={`var(--wv-${p.truth})`} stroke="var(--wv-night)" stroke-width="1.5"></circle>
+        ))}
+        <g data-l="m-legend" class="off">
+          <circle cx="50" cy="552" r="6.5" fill="var(--wv-on-2)"></circle>
+          <text x="66" y="560" class="lab soft small">a test photo, coloured by variety</text>
+          <circle cx="442" cy="552" r="6.5" fill="var(--wv-on-2)" stroke="var(--wv-on)" stroke-width="3"></circle>
+          <text x="460" y="560" class="lab soft small">ring: named wrongly</text>
+        </g>
+      </g>
+
+      <!-- 6 · the result: correct answers per variety, for both methods -->
+      <g data-l="result" class="off">
+        {panels.map((p) => (
+          <g data-l="r-panel" class="off">
+            <text x={p.x} y="78" class="lab soft small">{p.title}</text>
+            <text x={p.x - 3} y="150" class="num" font-size="66">{p.acc}</text>
+            <text x={p.x + 172} y="150" class="lab soft small">correct</text>
+            {p.rows.map((row) => (
+              <g>
+                <text x={p.x} y={row.y} class="lab small">{row.name}</text>
+                <rect x={p.x + 110} y={row.y - 18} width="200" height="20" rx="4" fill="var(--wv-panel)"></rect>
+                <rect data-l="r-bar" data-w={row.w} x={p.x + 110} y={row.y - 18} width="0" height="20" rx="4" fill={`var(--wv-${row.id})`}></rect>
+                <text x={p.x + 110} y={row.y + 30} class="lab soft small">{row.right} of {row.total}</text>
+              </g>
+            ))}
+          </g>
+        ))}
+        <g data-l="r-note" class="off">
+          <text x="40" y="566" class="lab">Joya is the hardest for both</text>
+        </g>
+      </g>
+
+      <!-- 7 · the goal: a camera over the belt names each fruit as it passes -->
+      <g data-l="belt" class="off">
+        <rect width="800" height="600" fill="var(--wv-cream)"></rect>
+        <rect x="-10" y="351" width="820" height="20" rx="10" fill="var(--wv-belt)"></rect>
+        <g data-l="fruit">
+          {fruit.map((f) => (
+            <g>
+              <g style={`color: var(--wv-rind)`}><use href="#wv-melon-mini" x={f.cx - 56} y="263" width="112" height="89.6"></use></g>
+              {f.v && (
+                <g data-l="b-tag" class="off">
+                  <rect x={f.cx - f.tag! / 2} y="210" width={f.tag} height="40" rx="20" fill="#fff" stroke="var(--rule)" stroke-width="1.5"></rect>
+                  <circle cx={f.cx - f.tag! / 2 + 20} cy="230" r="8" fill={`var(--wv-${f.v.id}-light)`}></circle>
+                  <text x={f.cx - f.tag! / 2 + 34} y="238" class="lab ink small strong">{f.v.name}</text>
+                </g>
+              )}
+            </g>
+          ))}
+        </g>
+        <use href="#wv-camera-arch" x="190" y="96" width="420" height="341.3"></use>
+        {varieties.map((v, i) => (
+          <g data-l="b-crate" class="off">
+            <use href="#wv-crate" x={56 + i * 244} y="458" width="200" height="125"></use>
+            <rect x={56 + i * 244 + 30} y="500" width="140" height="42" rx="6" fill="#fff" stroke="var(--wv-crate-2)" stroke-width="1.5"></rect>
+            <circle cx={56 + i * 244 + 50} cy="521" r="8" fill={`var(--wv-${v.id}-light)`}></circle>
+            <text x={56 + i * 244 + 64} y="529" class="lab ink small strong">{v.name}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .wv {
+    /* never taller than the space under the site header */
+    width: min(100%, calc((100svh - var(--header-h) - 3rem) * 4 / 3));
+    min-width: min(100%, 300px);
+    margin-inline: auto;
+  }
+  .wv-canvas {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--wv-cream);
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  .off {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .pixelated {
+    image-rendering: pixelated;
+  }
+  text {
+    fill: var(--wv-on);
+  }
+  .num {
+    font-weight: 680;
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .lab {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 22px;
+  }
+  .strong {
+    font-weight: 650;
+  }
+  .caps {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+  .soft {
+    fill: var(--wv-on-2);
+  }
+  .ink {
+    fill: var(--ink);
+  }
+  .slate {
+    fill: var(--slate);
+  }
+
+  @media (max-width: 900px) {
+    .wv {
+      width: min(100%, calc((100svh - var(--header-h) - 17rem) * 4 / 3));
+    }
+  }
+</style>

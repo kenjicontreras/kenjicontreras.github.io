@@ -1,0 +1,145 @@
+{
+ "status": "Positions digitised from Guzman et al. 2025, Fig. 1; approximate (about ±2 km).",
+ "stations": [
+  {
+   "id": "CR-S1",
+   "label": "S1",
+   "country": "CR",
+   "system": "Barra del Colorado",
+   "lon": -83.6301,
+   "lat": 10.8555,
+   "x": 183.6,
+   "y": 95.3
+  },
+  {
+   "id": "CR-S2",
+   "label": "S2",
+   "country": "CR",
+   "system": "Barra del Colorado",
+   "lon": -83.6092,
+   "lat": 10.7952,
+   "x": 188,
+   "y": 108.2
+  },
+  {
+   "id": "CR-S3",
+   "label": "S3",
+   "country": "CR",
+   "system": "Barra del Colorado",
+   "lon": -83.5796,
+   "lat": 10.7099,
+   "x": 194.2,
+   "y": 126.5
+  },
+  {
+   "id": "CR-S4",
+   "label": "S4",
+   "country": "CR",
+   "system": "Barra del Colorado",
+   "lon": -83.5895,
+   "lat": 10.7865,
+   "x": 192.2,
+   "y": 110
+  },
+  {
+   "id": "CR-S5",
+   "label": "S5",
+   "country": "CR",
+   "system": "Barra del Colorado",
+   "lon": -83.6365,
+   "lat": 10.7836,
+   "x": 182.2,
+   "y": 110.7
+  },
+  {
+   "id": "CR-S6",
+   "label": "S6",
+   "country": "CR",
+   "system": "Tortuguero",
+   "lon": -83.4688,
+   "lat": 10.4482,
+   "x": 217.6,
+   "y": 182.5
+  },
+  {
+   "id": "CR-S7",
+   "label": "S7",
+   "country": "CR",
+   "system": "Tortuguero",
+   "lon": -83.4323,
+   "lat": 10.3763,
+   "x": 225.3,
+   "y": 198
+  },
+  {
+   "id": "CR-S8",
+   "label": "S8",
+   "country": "CR",
+   "system": "Pacuare",
+   "lon": -83.2733,
+   "lat": 10.1929,
+   "x": 258.9,
+   "y": 237.2
+  },
+  {
+   "id": "CR-S9",
+   "label": "S9",
+   "country": "CR",
+   "system": "Pacuare",
+   "lon": -83.2808,
+   "lat": 10.1894,
+   "x": 257.3,
+   "y": 238
+  },
+  {
+   "id": "PA-S1",
+   "label": "S1",
+   "country": "PA",
+   "system": "Changuinola",
+   "lon": -82.4744,
+   "lat": 9.4599,
+   "x": 427.5,
+   "y": 394.3
+  },
+  {
+   "id": "PA-S2",
+   "label": "S2",
+   "country": "PA",
+   "system": "Changuinola",
+   "lon": -82.4583,
+   "lat": 9.4773,
+   "x": 430.9,
+   "y": 390.6
+  },
+  {
+   "id": "PA-S3",
+   "label": "S3",
+   "country": "PA",
+   "system": "San San",
+   "lon": -82.5302,
+   "lat": 9.4927,
+   "x": 415.7,
+   "y": 387.3
+  },
+  {
+   "id": "PA-S4",
+   "label": "S4",
+   "country": "PA",
+   "system": "Changuinola",
+   "lon": -82.4863,
+   "lat": 9.4711,
+   "x": 425,
+   "y": 391.9
+  },
+  {
+   "id": "PA-S5",
+   "label": "S5",
+   "country": "PA",
+   "system": "Changuinola",
+   "lon": -82.4958,
+   "lat": 9.4739,
+   "x": 423,
+   "y": 391.3
+  }
+ ]
+}

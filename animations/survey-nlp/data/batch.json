@@ -1,0 +1,1382 @@
+{
+ "status": "illustrative: 60 synthetic interviews (seeded); features, z-scores and score computed with the formulas of the audit system",
+ "features": [
+  "minutes",
+  "nonresponse",
+  "entropy",
+  "straightlining"
+ ],
+ "stats": {
+  "minutes": {
+   "mean": 23.38,
+   "sd": 4.11
+  },
+  "nonresponse": {
+   "mean": 0.07,
+   "sd": 0.07
+  },
+  "entropy": {
+   "mean": 2.11,
+   "sd": 0.16
+  },
+  "straightlining": {
+   "mean": 0.04,
+   "sd": 0.17
+  }
+ },
+ "top": 19,
+ "byInterviewer": [
+  {
+   "name": "A",
+   "flagged": 2,
+   "total": 11
+  },
+  {
+   "name": "B",
+   "flagged": 1,
+   "total": 10
+  },
+  {
+   "name": "C",
+   "flagged": 1,
+   "total": 9
+  },
+  {
+   "name": "D",
+   "flagged": 6,
+   "total": 10
+  },
+  {
+   "name": "E",
+   "flagged": 6,
+   "total": 12
+  },
+  {
+   "name": "F",
+   "flagged": 3,
+   "total": 8
+  }
+ ],
+ "interviews": [
+  {
+   "id": "E020",
+   "interviewer": "D",
+   "minutes": 20.18,
+   "nonresponse": 0,
+   "entropy": 1.73,
+   "straightlining": 0.5,
+   "z": [
+    -0.78,
+    -1,
+    -2.37,
+    2.71
+   ],
+   "part": [
+    0.26,
+    0.33,
+    0.79,
+    0.9
+   ],
+   "score": 0.57,
+   "review": true
+  },
+  {
+   "id": "E039",
+   "interviewer": "E",
+   "minutes": 31.74,
+   "nonresponse": 0.13,
+   "entropy": 1.68,
+   "straightlining": 0,
+   "z": [
+    2.03,
+    0.86,
+    -2.69,
+    -0.24
+   ],
+   "part": [
+    0.68,
+    0.29,
+    0.9,
+    0.08
+   ],
+   "score": 0.49,
+   "review": true
+  },
+  {
+   "id": "E034",
+   "interviewer": "D",
+   "minutes": 18.19,
+   "nonresponse": 0.17,
+   "entropy": 2.08,
+   "straightlining": 0.5,
+   "z": [
+    -1.26,
+    1.43,
+    -0.19,
+    2.71
+   ],
+   "part": [
+    0.42,
+    0.48,
+    0.06,
+    0.9
+   ],
+   "score": 0.47,
+   "review": true
+  },
+  {
+   "id": "E041",
+   "interviewer": "D",
+   "minutes": 9.04,
+   "nonresponse": 0.17,
+   "entropy": 2.26,
+   "straightlining": 0,
+   "z": [
+    -3.49,
+    1.43,
+    0.94,
+    -0.24
+   ],
+   "part": [
+    1,
+    0.48,
+    0.31,
+    0.08
+   ],
+   "score": 0.47,
+   "review": true
+  },
+  {
+   "id": "E008",
+   "interviewer": "D",
+   "minutes": 17.85,
+   "nonresponse": 0,
+   "entropy": 2.04,
+   "straightlining": 0.5,
+   "z": [
+    -1.35,
+    -1,
+    -0.44,
+    2.71
+   ],
+   "part": [
+    0.45,
+    0.33,
+    0.15,
+    0.9
+   ],
+   "score": 0.46,
+   "review": true
+  },
+  {
+   "id": "E047",
+   "interviewer": "E",
+   "minutes": 20.73,
+   "nonresponse": 0,
+   "entropy": 1.96,
+   "straightlining": 1,
+   "z": [
+    -0.64,
+    -1,
+    -0.94,
+    5.65
+   ],
+   "part": [
+    0.21,
+    0.33,
+    0.31,
+    1
+   ],
+   "score": 0.46,
+   "review": true
+  },
+  {
+   "id": "E053",
+   "interviewer": "A",
+   "minutes": 28.64,
+   "nonresponse": 0.38,
+   "entropy": 2.26,
+   "straightlining": 0,
+   "z": [
+    1.28,
+    4.43,
+    0.94,
+    -0.24
+   ],
+   "part": [
+    0.43,
+    1,
+    0.31,
+    0.08
+   ],
+   "score": 0.46,
+   "review": true
+  },
+  {
+   "id": "E040",
+   "interviewer": "E",
+   "minutes": 19.9,
+   "nonresponse": 0,
+   "entropy": 1.74,
+   "straightlining": 0,
+   "z": [
+    -0.85,
+    -1,
+    -2.31,
+    -0.24
+   ],
+   "part": [
+    0.28,
+    0.33,
+    0.77,
+    0.08
+   ],
+   "score": 0.37,
+   "review": true
+  },
+  {
+   "id": "E005",
+   "interviewer": "D",
+   "minutes": 21.7,
+   "nonresponse": 0.04,
+   "entropy": 1.59,
+   "straightlining": 0,
+   "z": [
+    -0.41,
+    -0.43,
+    -3.25,
+    -0.24
+   ],
+   "part": [
+    0.14,
+    0.14,
+    1,
+    0.08
+   ],
+   "score": 0.34,
+   "review": true
+  },
+  {
+   "id": "E013",
+   "interviewer": "B",
+   "minutes": 9.91,
+   "nonresponse": 0.08,
+   "entropy": 2.19,
+   "straightlining": 0,
+   "z": [
+    -3.28,
+    0.14,
+    0.5,
+    -0.24
+   ],
+   "part": [
+    1,
+    0.05,
+    0.17,
+    0.08
+   ],
+   "score": 0.33,
+   "review": true
+  },
+  {
+   "id": "E026",
+   "interviewer": "E",
+   "minutes": 23.79,
+   "nonresponse": 0.29,
+   "entropy": 2.13,
+   "straightlining": 0,
+   "z": [
+    0.1,
+    3.14,
+    0.13,
+    -0.24
+   ],
+   "part": [
+    0.03,
+    1,
+    0.04,
+    0.08
+   ],
+   "score": 0.29,
+   "review": true
+  },
+  {
+   "id": "E036",
+   "interviewer": "F",
+   "minutes": 19.19,
+   "nonresponse": 0.17,
+   "entropy": 1.98,
+   "straightlining": 0,
+   "z": [
+    -1.02,
+    1.43,
+    -0.81,
+    -0.24
+   ],
+   "part": [
+    0.34,
+    0.48,
+    0.27,
+    0.08
+   ],
+   "score": 0.29,
+   "review": true
+  },
+  {
+   "id": "E042",
+   "interviewer": "F",
+   "minutes": 28.19,
+   "nonresponse": 0,
+   "entropy": 2.28,
+   "straightlining": 0,
+   "z": [
+    1.17,
+    -1,
+    1.06,
+    -0.24
+   ],
+   "part": [
+    0.39,
+    0.33,
+    0.35,
+    0.08
+   ],
+   "score": 0.29,
+   "review": true
+  },
+  {
+   "id": "E038",
+   "interviewer": "C",
+   "minutes": 30.46,
+   "nonresponse": 0.08,
+   "entropy": 2.3,
+   "straightlining": 0,
+   "z": [
+    1.72,
+    0.14,
+    1.19,
+    -0.24
+   ],
+   "part": [
+    0.57,
+    0.05,
+    0.4,
+    0.08
+   ],
+   "score": 0.28,
+   "review": true
+  },
+  {
+   "id": "E045",
+   "interviewer": "E",
+   "minutes": 23.33,
+   "nonresponse": 0.17,
+   "entropy": 1.84,
+   "straightlining": 0,
+   "z": [
+    -0.01,
+    1.43,
+    -1.69,
+    -0.24
+   ],
+   "part": [
+    0,
+    0.48,
+    0.56,
+    0.08
+   ],
+   "score": 0.28,
+   "review": true
+  },
+  {
+   "id": "E051",
+   "interviewer": "E",
+   "minutes": 18.06,
+   "nonresponse": 0.04,
+   "entropy": 2.31,
+   "straightlining": 0,
+   "z": [
+    -1.29,
+    -0.43,
+    1.25,
+    -0.24
+   ],
+   "part": [
+    0.43,
+    0.14,
+    0.42,
+    0.08
+   ],
+   "score": 0.27,
+   "review": true
+  },
+  {
+   "id": "E056",
+   "interviewer": "A",
+   "minutes": 31.11,
+   "nonresponse": 0.08,
+   "entropy": 2.24,
+   "straightlining": 0,
+   "z": [
+    1.88,
+    0.14,
+    0.81,
+    -0.24
+   ],
+   "part": [
+    0.63,
+    0.05,
+    0.27,
+    0.08
+   ],
+   "score": 0.26,
+   "review": true
+  },
+  {
+   "id": "E002",
+   "interviewer": "F",
+   "minutes": 30.43,
+   "nonresponse": 0,
+   "entropy": 2.12,
+   "straightlining": 0,
+   "z": [
+    1.72,
+    -1,
+    0.06,
+    -0.24
+   ],
+   "part": [
+    0.57,
+    0.33,
+    0.02,
+    0.08
+   ],
+   "score": 0.25,
+   "review": true
+  },
+  {
+   "id": "E024",
+   "interviewer": "D",
+   "minutes": 25.04,
+   "nonresponse": 0.17,
+   "entropy": 2.23,
+   "straightlining": 0,
+   "z": [
+    0.4,
+    1.43,
+    0.75,
+    -0.24
+   ],
+   "part": [
+    0.13,
+    0.48,
+    0.25,
+    0.08
+   ],
+   "score": 0.24,
+   "review": true
+  },
+  {
+   "id": "E057",
+   "interviewer": "E",
+   "minutes": 25.08,
+   "nonresponse": 0,
+   "entropy": 2.3,
+   "straightlining": 0,
+   "z": [
+    0.41,
+    -1,
+    1.19,
+    -0.24
+   ],
+   "part": [
+    0.14,
+    0.33,
+    0.4,
+    0.08
+   ],
+   "score": 0.24,
+   "review": false
+  },
+  {
+   "id": "E055",
+   "interviewer": "A",
+   "minutes": 24.29,
+   "nonresponse": 0.17,
+   "entropy": 2.25,
+   "straightlining": 0,
+   "z": [
+    0.22,
+    1.43,
+    0.88,
+    -0.24
+   ],
+   "part": [
+    0.07,
+    0.48,
+    0.29,
+    0.08
+   ],
+   "score": 0.23,
+   "review": false
+  },
+  {
+   "id": "E030",
+   "interviewer": "C",
+   "minutes": 26.2,
+   "nonresponse": 0,
+   "entropy": 2.22,
+   "straightlining": 0,
+   "z": [
+    0.69,
+    -1,
+    0.69,
+    -0.24
+   ],
+   "part": [
+    0.23,
+    0.33,
+    0.23,
+    0.08
+   ],
+   "score": 0.22,
+   "review": false
+  },
+  {
+   "id": "E033",
+   "interviewer": "A",
+   "minutes": 22.71,
+   "nonresponse": 0,
+   "entropy": 2.27,
+   "straightlining": 0,
+   "z": [
+    -0.16,
+    -1,
+    1,
+    -0.24
+   ],
+   "part": [
+    0.05,
+    0.33,
+    0.33,
+    0.08
+   ],
+   "score": 0.2,
+   "review": false
+  },
+  {
+   "id": "E032",
+   "interviewer": "C",
+   "minutes": 26.68,
+   "nonresponse": 0,
+   "entropy": 2.15,
+   "straightlining": 0,
+   "z": [
+    0.8,
+    -1,
+    0.25,
+    -0.24
+   ],
+   "part": [
+    0.27,
+    0.33,
+    0.08,
+    0.08
+   ],
+   "score": 0.19,
+   "review": false
+  },
+  {
+   "id": "E011",
+   "interviewer": "E",
+   "minutes": 26.1,
+   "nonresponse": 0.08,
+   "entropy": 2.28,
+   "straightlining": 0,
+   "z": [
+    0.66,
+    0.14,
+    1.06,
+    -0.24
+   ],
+   "part": [
+    0.22,
+    0.05,
+    0.35,
+    0.08
+   ],
+   "score": 0.18,
+   "review": false
+  },
+  {
+   "id": "E014",
+   "interviewer": "C",
+   "minutes": 27.62,
+   "nonresponse": 0.13,
+   "entropy": 2.11,
+   "straightlining": 0,
+   "z": [
+    1.03,
+    0.86,
+    0,
+    -0.24
+   ],
+   "part": [
+    0.34,
+    0.29,
+    0,
+    0.08
+   ],
+   "score": 0.18,
+   "review": false
+  },
+  {
+   "id": "E021",
+   "interviewer": "D",
+   "minutes": 21.36,
+   "nonresponse": 0.13,
+   "entropy": 2.21,
+   "straightlining": 0,
+   "z": [
+    -0.49,
+    0.86,
+    0.63,
+    -0.24
+   ],
+   "part": [
+    0.16,
+    0.29,
+    0.21,
+    0.08
+   ],
+   "score": 0.18,
+   "review": false
+  },
+  {
+   "id": "E043",
+   "interviewer": "D",
+   "minutes": 23.53,
+   "nonresponse": 0,
+   "entropy": 1.97,
+   "straightlining": 0,
+   "z": [
+    0.04,
+    -1,
+    -0.87,
+    -0.24
+   ],
+   "part": [
+    0.01,
+    0.33,
+    0.29,
+    0.08
+   ],
+   "score": 0.18,
+   "review": false
+  },
+  {
+   "id": "E050",
+   "interviewer": "B",
+   "minutes": 24.94,
+   "nonresponse": 0.08,
+   "entropy": 1.89,
+   "straightlining": 0,
+   "z": [
+    0.38,
+    0.14,
+    -1.37,
+    -0.24
+   ],
+   "part": [
+    0.13,
+    0.05,
+    0.46,
+    0.08
+   ],
+   "score": 0.18,
+   "review": false
+  },
+  {
+   "id": "E006",
+   "interviewer": "E",
+   "minutes": 26.21,
+   "nonresponse": 0,
+   "entropy": 2.1,
+   "straightlining": 0,
+   "z": [
+    0.69,
+    -1,
+    -0.06,
+    -0.24
+   ],
+   "part": [
+    0.23,
+    0.33,
+    0.02,
+    0.08
+   ],
+   "score": 0.17,
+   "review": false
+  },
+  {
+   "id": "E022",
+   "interviewer": "A",
+   "minutes": 22.01,
+   "nonresponse": 0,
+   "entropy": 2.04,
+   "straightlining": 0,
+   "z": [
+    -0.33,
+    -1,
+    -0.44,
+    -0.24
+   ],
+   "part": [
+    0.11,
+    0.33,
+    0.15,
+    0.08
+   ],
+   "score": 0.17,
+   "review": false
+  },
+  {
+   "id": "E044",
+   "interviewer": "A",
+   "minutes": 26.83,
+   "nonresponse": 0.08,
+   "entropy": 2.24,
+   "straightlining": 0,
+   "z": [
+    0.84,
+    0.14,
+    0.81,
+    -0.24
+   ],
+   "part": [
+    0.28,
+    0.05,
+    0.27,
+    0.08
+   ],
+   "score": 0.17,
+   "review": false
+  },
+  {
+   "id": "E046",
+   "interviewer": "E",
+   "minutes": 21.38,
+   "nonresponse": 0.04,
+   "entropy": 2.26,
+   "straightlining": 0,
+   "z": [
+    -0.49,
+    -0.43,
+    0.94,
+    -0.24
+   ],
+   "part": [
+    0.16,
+    0.14,
+    0.31,
+    0.08
+   ],
+   "score": 0.17,
+   "review": false
+  },
+  {
+   "id": "E007",
+   "interviewer": "B",
+   "minutes": 25.09,
+   "nonresponse": 0.08,
+   "entropy": 1.94,
+   "straightlining": 0,
+   "z": [
+    0.42,
+    0.14,
+    -1.06,
+    -0.24
+   ],
+   "part": [
+    0.14,
+    0.05,
+    0.35,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E015",
+   "interviewer": "C",
+   "minutes": 19.69,
+   "nonresponse": 0.04,
+   "entropy": 2.16,
+   "straightlining": 0,
+   "z": [
+    -0.9,
+    -0.43,
+    0.31,
+    -0.24
+   ],
+   "part": [
+    0.3,
+    0.14,
+    0.1,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E031",
+   "interviewer": "F",
+   "minutes": 21.51,
+   "nonresponse": 0.08,
+   "entropy": 1.93,
+   "straightlining": 0,
+   "z": [
+    -0.45,
+    0.14,
+    -1.12,
+    -0.24
+   ],
+   "part": [
+    0.15,
+    0.05,
+    0.37,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E035",
+   "interviewer": "F",
+   "minutes": 26.1,
+   "nonresponse": 0.04,
+   "entropy": 2.21,
+   "straightlining": 0,
+   "z": [
+    0.66,
+    -0.43,
+    0.63,
+    -0.24
+   ],
+   "part": [
+    0.22,
+    0.14,
+    0.21,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E052",
+   "interviewer": "E",
+   "minutes": 26.73,
+   "nonresponse": 0.08,
+   "entropy": 1.99,
+   "straightlining": 0,
+   "z": [
+    0.82,
+    0.14,
+    -0.75,
+    -0.24
+   ],
+   "part": [
+    0.27,
+    0.05,
+    0.25,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E058",
+   "interviewer": "A",
+   "minutes": 19.99,
+   "nonresponse": 0.08,
+   "entropy": 2.22,
+   "straightlining": 0,
+   "z": [
+    -0.82,
+    0.14,
+    0.69,
+    -0.24
+   ],
+   "part": [
+    0.27,
+    0.05,
+    0.23,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E059",
+   "interviewer": "B",
+   "minutes": 21.92,
+   "nonresponse": 0.04,
+   "entropy": 2.26,
+   "straightlining": 0,
+   "z": [
+    -0.36,
+    -0.43,
+    0.94,
+    -0.24
+   ],
+   "part": [
+    0.12,
+    0.14,
+    0.31,
+    0.08
+   ],
+   "score": 0.16,
+   "review": false
+  },
+  {
+   "id": "E009",
+   "interviewer": "A",
+   "minutes": 25.83,
+   "nonresponse": 0.13,
+   "entropy": 2.09,
+   "straightlining": 0,
+   "z": [
+    0.6,
+    0.86,
+    -0.13,
+    -0.24
+   ],
+   "part": [
+    0.2,
+    0.29,
+    0.04,
+    0.08
+   ],
+   "score": 0.15,
+   "review": false
+  },
+  {
+   "id": "E017",
+   "interviewer": "C",
+   "minutes": 27.63,
+   "nonresponse": 0.04,
+   "entropy": 2.11,
+   "straightlining": 0,
+   "z": [
+    1.03,
+    -0.43,
+    0,
+    -0.24
+   ],
+   "part": [
+    0.34,
+    0.14,
+    0,
+    0.08
+   ],
+   "score": 0.14,
+   "review": false
+  },
+  {
+   "id": "E027",
+   "interviewer": "D",
+   "minutes": 25.15,
+   "nonresponse": 0,
+   "entropy": 2.1,
+   "straightlining": 0,
+   "z": [
+    0.43,
+    -1,
+    -0.06,
+    -0.24
+   ],
+   "part": [
+    0.14,
+    0.33,
+    0.02,
+    0.08
+   ],
+   "score": 0.14,
+   "review": false
+  },
+  {
+   "id": "E028",
+   "interviewer": "A",
+   "minutes": 23.52,
+   "nonresponse": 0,
+   "entropy": 2.15,
+   "straightlining": 0,
+   "z": [
+    0.03,
+    -1,
+    0.25,
+    -0.24
+   ],
+   "part": [
+    0.01,
+    0.33,
+    0.08,
+    0.08
+   ],
+   "score": 0.13,
+   "review": false
+  },
+  {
+   "id": "E003",
+   "interviewer": "F",
+   "minutes": 23.36,
+   "nonresponse": 0.08,
+   "entropy": 2.28,
+   "straightlining": 0,
+   "z": [
+    0,
+    0.14,
+    1.06,
+    -0.24
+   ],
+   "part": [
+    0,
+    0.05,
+    0.35,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E012",
+   "interviewer": "C",
+   "minutes": 22.07,
+   "nonresponse": 0.13,
+   "entropy": 2.11,
+   "straightlining": 0,
+   "z": [
+    -0.32,
+    0.86,
+    0,
+    -0.24
+   ],
+   "part": [
+    0.11,
+    0.29,
+    0,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E025",
+   "interviewer": "A",
+   "minutes": 22.67,
+   "nonresponse": 0.04,
+   "entropy": 2.21,
+   "straightlining": 0,
+   "z": [
+    -0.17,
+    -0.43,
+    0.63,
+    -0.24
+   ],
+   "part": [
+    0.06,
+    0.14,
+    0.21,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E049",
+   "interviewer": "C",
+   "minutes": 22.76,
+   "nonresponse": 0,
+   "entropy": 2.1,
+   "straightlining": 0,
+   "z": [
+    -0.15,
+    -1,
+    -0.06,
+    -0.24
+   ],
+   "part": [
+    0.05,
+    0.33,
+    0.02,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E054",
+   "interviewer": "B",
+   "minutes": 20.55,
+   "nonresponse": 0.08,
+   "entropy": 2.06,
+   "straightlining": 0,
+   "z": [
+    -0.69,
+    0.14,
+    -0.31,
+    -0.24
+   ],
+   "part": [
+    0.23,
+    0.05,
+    0.1,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E060",
+   "interviewer": "F",
+   "minutes": 25.67,
+   "nonresponse": 0.08,
+   "entropy": 2.19,
+   "straightlining": 0,
+   "z": [
+    0.56,
+    0.14,
+    0.5,
+    -0.24
+   ],
+   "part": [
+    0.19,
+    0.05,
+    0.17,
+    0.08
+   ],
+   "score": 0.12,
+   "review": false
+  },
+  {
+   "id": "E010",
+   "interviewer": "B",
+   "minutes": 21.19,
+   "nonresponse": 0.08,
+   "entropy": 2.17,
+   "straightlining": 0,
+   "z": [
+    -0.53,
+    0.14,
+    0.38,
+    -0.24
+   ],
+   "part": [
+    0.18,
+    0.05,
+    0.13,
+    0.08
+   ],
+   "score": 0.11,
+   "review": false
+  },
+  {
+   "id": "E016",
+   "interviewer": "B",
+   "minutes": 24.62,
+   "nonresponse": 0.04,
+   "entropy": 2.17,
+   "straightlining": 0,
+   "z": [
+    0.3,
+    -0.43,
+    0.38,
+    -0.24
+   ],
+   "part": [
+    0.1,
+    0.14,
+    0.13,
+    0.08
+   ],
+   "score": 0.11,
+   "review": false
+  },
+  {
+   "id": "E029",
+   "interviewer": "E",
+   "minutes": 24.55,
+   "nonresponse": 0.08,
+   "entropy": 2.01,
+   "straightlining": 0,
+   "z": [
+    0.28,
+    0.14,
+    -0.63,
+    -0.24
+   ],
+   "part": [
+    0.09,
+    0.05,
+    0.21,
+    0.08
+   ],
+   "score": 0.11,
+   "review": false
+  },
+  {
+   "id": "E037",
+   "interviewer": "B",
+   "minutes": 23.57,
+   "nonresponse": 0.08,
+   "entropy": 2.24,
+   "straightlining": 0,
+   "z": [
+    0.05,
+    0.14,
+    0.81,
+    -0.24
+   ],
+   "part": [
+    0.02,
+    0.05,
+    0.27,
+    0.08
+   ],
+   "score": 0.11,
+   "review": false
+  },
+  {
+   "id": "E023",
+   "interviewer": "A",
+   "minutes": 21.71,
+   "nonresponse": 0.08,
+   "entropy": 2.17,
+   "straightlining": 0,
+   "z": [
+    -0.41,
+    0.14,
+    0.38,
+    -0.24
+   ],
+   "part": [
+    0.14,
+    0.05,
+    0.13,
+    0.08
+   ],
+   "score": 0.1,
+   "review": false
+  },
+  {
+   "id": "E004",
+   "interviewer": "D",
+   "minutes": 23.98,
+   "nonresponse": 0.08,
+   "entropy": 2.19,
+   "straightlining": 0,
+   "z": [
+    0.15,
+    0.14,
+    0.5,
+    -0.24
+   ],
+   "part": [
+    0.05,
+    0.05,
+    0.17,
+    0.08
+   ],
+   "score": 0.09,
+   "review": false
+  },
+  {
+   "id": "E018",
+   "interviewer": "B",
+   "minutes": 21.92,
+   "nonresponse": 0.04,
+   "entropy": 2.12,
+   "straightlining": 0,
+   "z": [
+    -0.36,
+    -0.43,
+    0.06,
+    -0.24
+   ],
+   "part": [
+    0.12,
+    0.14,
+    0.02,
+    0.08
+   ],
+   "score": 0.09,
+   "review": false
+  },
+  {
+   "id": "E048",
+   "interviewer": "C",
+   "minutes": 22.55,
+   "nonresponse": 0.08,
+   "entropy": 2.17,
+   "straightlining": 0,
+   "z": [
+    -0.2,
+    0.14,
+    0.38,
+    -0.24
+   ],
+   "part": [
+    0.07,
+    0.05,
+    0.13,
+    0.08
+   ],
+   "score": 0.08,
+   "review": false
+  },
+  {
+   "id": "E001",
+   "interviewer": "F",
+   "minutes": 22.73,
+   "nonresponse": 0.08,
+   "entropy": 2.15,
+   "straightlining": 0,
+   "z": [
+    -0.16,
+    0.14,
+    0.25,
+    -0.24
+   ],
+   "part": [
+    0.05,
+    0.05,
+    0.08,
+    0.08
+   ],
+   "score": 0.07,
+   "review": false
+  },
+  {
+   "id": "E019",
+   "interviewer": "B",
+   "minutes": 23.54,
+   "nonresponse": 0.08,
+   "entropy": 2.15,
+   "straightlining": 0,
+   "z": [
+    0.04,
+    0.14,
+    0.25,
+    -0.24
+   ],
+   "part": [
+    0.01,
+    0.05,
+    0.08,
+    0.08
+   ],
+   "score": 0.06,
+   "review": false
+  }
+ ]
+}

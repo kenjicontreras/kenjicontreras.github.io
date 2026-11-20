@@ -1,0 +1,348 @@
+---
+// The stage for the vector-spectra story: one SVG (viewBox 800 × 600) holding a
+// layer per storyboard step.
+// Everything is drawn here at build time; scene.ts only moves and fades it.
+// Layers are addressed with data-l="name" (see storyboard.md).
+import './tokens.css';
+import species from './data/species.json';
+import spectra from './data/spectra.json';
+import embedding from './data/embedding.json';
+
+const r1 = (v: number) => Math.round(v * 10) / 10;
+type P = [number, number];
+
+// Inline the SVG assets as <symbol>s so they can be recoloured with `color`.
+const raw = import.meta.glob<string>('./assets/svg/*.svg', { eager: true, query: '?raw', import: 'default' });
+const symbol = (name: string) => {
+  const m = raw[`./assets/svg/${name}.svg`].match(/<svg([^>]*)>([\s\S]*)<\/svg>/)!;
+  const viewBox = m[1].match(/viewBox="([^"]*)"/)![1];
+  const attrs = m[1].replace(/\s(xmlns|viewBox)="[^"]*"/g, '');
+  return `<symbol id="vs-${name}" viewBox="${viewBox}"><g${attrs}>${m[2]}</g></symbol>`;
+};
+const symbols = ['mosquito', 'tick', 'bench-back', 'bench-front', 'mosquito-mini', 'tick-mini', 'icon-check'].map(symbol).join('');
+
+// ── step 1 and 8: the two animals ─────────────────────────────────────────
+const animals = [
+  { id: 'm', cx: 232, name: 'Anopheles mosquito', disease: 'malaria', chip: 120, trace: spectra.cards.anchor },
+  { id: 't', cx: 620, name: 'Amblyomma tick', disease: 'spotted fever', chip: 184, trace: spectra.cards.negative },
+];
+
+// ── step 3: molecules of three sizes fly down the tube; light ones are fastest
+const tube = { x: 250, y: 236, w: 440, h: 64 };
+const ions = Array.from({ length: 15 }, (_, i) => {
+  const size = i % 3; // 0 light, 1 medium, 2 heavy
+  return { size, r: [4, 6.5, 9][size], y: r1(tube.y + 14 + ((i * 37) % 36)), lag: r1(((i * 53) % 10) / 100) };
+});
+// a molecule as the eye reads it: light ones a single bead, heavy ones a folded
+// cluster of beads (illustrative), each with a faint halo of charge
+const lobes: [number, number, number][][] = [
+  [[0, 0, 4]],
+  [[-1.8, 1, 4.6], [2.6, -1.6, 3.8]],
+  [[-2.6, 1.6, 5.6], [3, -2.2, 4.8], [2.4, 4, 3.8]],
+];
+const molecule = (cx: number, cy: number, size: number) =>
+  `<circle cx="${cx}" cy="${cy}" r="${[8, 12, 16][size]}" fill="url(#vs-halo)"></circle>` +
+  lobes[size].map(([dx, dy, r]) => `<circle cx="${r1(cx + dx)}" cy="${r1(cy + dy)}" r="${r}" fill="url(#vs-bead)"></circle>`).join('');
+const sorted = [[330, 268, 2], [366, 282, 2], [468, 262, 1], [500, 276, 1], [612, 270, 0], [640, 258, 0], [660, 280, 0]];
+// spectrum: the area under the trace, and ticks on the mass axis
+const baseY = 560;
+const area = `${spectra.main.d}L${spectra.main.w},${baseY - 404}L0,${baseY - 404}Z`;
+const ticks = Array.from({ length: 6 }, (_, i) => r1(256 + (i * spectra.main.w) / 5));
+
+// ── step 4: spectra per species, on one scale for both families ───────────
+const unit = 1.6; // stage units per spectrum
+const mosq = species.mosquitoes.map((s, i) => ({ ...s, y: 140 + i * 34, w: r1(s.n * unit) }));
+const tick = species.ticks.map((s, i) => ({ ...s, y: r1(140 + i * 22.6), w: r1(s.n * unit) }));
+const mMax = mosq.reduce((a, b) => (b.n > a.n ? b : a));
+const mMin = mosq.reduce((a, b) => (b.n < a.n ? b : a));
+const tMax = tick.reduce((a, b) => (b.n > a.n ? b : a));
+const tMin = tick.find((t) => t.n === Math.min(...tick.map((x) => x.n)))!;
+
+// ── step 5: three spectra, one network, three points ──────────────────────
+const rows = [
+  { id: 'anchor', label: 'reference', cy: 150, d: spectra.cards.anchor },
+  { id: 'positive', label: 'same species', cy: 320, d: spectra.cards.positive },
+  { id: 'negative', label: 'another species', cy: 490, d: spectra.cards.negative },
+];
+const anchor: P = [600, 320];
+const pos = { from: [706, 176] as P, to: [636, 284] as P };
+const neg = { from: [548, 372] as P, to: [506, 468] as P };
+
+// ── steps 6 and 7: one point per spectrum; the SVG draws every fourth ─────
+const panels = embedding.panels as Record<string, { x: number; y: number; w: number; h: number }>;
+const dots = embedding.points.filter((_, i) => i % 4 === 0);
+const isles = embedding.islands;
+// the new spectrum lands in the island of Anopheles albimanus
+const home = isles.find((i) => i.name === 'Anopheles albimanus')!;
+const landing: P = [home.x + 13, home.y + 9];
+const neighbours = dots
+  .filter((d) => d.f === home.f && d.s === home.s)
+  .sort((a, b) => Math.hypot(a.b[0] - landing[0], a.b[1] - landing[1]) - Math.hypot(b.b[0] - landing[0], b.b[1] - landing[1]))
+  .slice(0, 5);
+---
+
+<div class="vs">
+  <div class="vs-canvas">
+    <svg viewBox="0 0 800 600" role="presentation" focusable="false">
+      <defs>
+        <Fragment set:html={symbols} />
+        <radialGradient id="vs-bead" cx="0.36" cy="0.32" r="0.75">
+          <stop offset="0" stop-color="#f3e9ff"></stop>
+          <stop offset="0.45" stop-color="#c79bff"></stop>
+          <stop offset="1" stop-color="#7d55c4"></stop>
+        </radialGradient>
+        <radialGradient id="vs-halo">
+          <stop offset="0.35" stop-color="#c79bff" stop-opacity="0.32"></stop>
+          <stop offset="1" stop-color="#c79bff" stop-opacity="0"></stop>
+        </radialGradient>
+        <linearGradient id="vs-area" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#9be8d8" stop-opacity="0.36"></stop>
+          <stop offset="1" stop-color="#9be8d8" stop-opacity="0"></stop>
+        </linearGradient>
+        <clipPath id="vs-wipe"><rect data-l="wipe" x="250" y="396" width="480" height="170"></rect></clipPath>
+        <clipPath id="vs-lens-clip"><circle cx="400" cy="270" r="212"></circle></clipPath>
+      </defs>
+
+      <!-- 1 and 8 · the specimens on a light table -->
+      <g data-l="table">
+        <rect width="800" height="600" fill="var(--vs-paper)"></rect>
+        <ellipse cx="236" cy="404" rx="190" ry="10" fill="#0e2a3a" fill-opacity="0.07"></ellipse>
+        <g data-l="heroes">
+          <use href="#vs-mosquito" x="22" y="122" width="430" height="282"></use>
+          <use href="#vs-tick" x="484" y="128" width="272" height="272"></use>
+        </g>
+        {animals.map((a) => (
+          <g data-l="s1-item" class="off">
+            <text x={a.cx} y="458" text-anchor="middle" class="lab ink sci">{a.name}</text>
+            <rect x={a.cx - a.chip / 2} y="478" width={a.chip} height="38" rx="19" fill="var(--vs-alert)"></rect>
+            <text x={a.cx} y="505" text-anchor="middle" class="lab strong white">{a.disease}</text>
+          </g>
+        ))}
+        <!-- 8 · each one named from its spectrum -->
+        {animals.map((a) => (
+          <g data-l="done" class="off">
+            <rect x={a.cx - 112} y="424" width="224" height="84" rx="8" fill="var(--vs-bench)"></rect>
+            <path d={a.trace} transform={`translate(${a.cx - 90},434)`} fill="none" stroke="var(--vs-trace)" stroke-width="1.6" stroke-linejoin="round"></path>
+            <g style="color: var(--teal)"><use href="#vs-icon-check" x={a.cx - 104} y="522" width="40" height="40"></use></g>
+            <text x={a.cx - 56} y="551" class="lab ink strong">identified</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 2 · look-alikes under the lens -->
+      <g data-l="lens" class="off">
+        <path d="M552,422 L648,518" stroke="var(--ink)" stroke-width="18" stroke-linecap="round"></path>
+        <circle cx="400" cy="270" r="212" fill="#fff"></circle>
+        <g clip-path="url(#vs-lens-clip)" style="color: var(--ink)">
+          <use href="#vs-mosquito-mini" x="206" y="150" width="190" height="126.7"></use>
+          <use href="#vs-mosquito-mini" x="412" y="150" width="190" height="126.7"></use>
+        </g>
+        <circle cx="400" cy="270" r="212" fill="none" stroke="var(--ink)" stroke-width="7"></circle>
+        <text data-l="lens-item" class="off num ink" x="300" y="372" text-anchor="middle" font-size="64">?</text>
+        <text data-l="lens-item" class="off num ink" x="506" y="372" text-anchor="middle" font-size="64">?</text>
+        <text data-l="lens-item" class="off lab ink" x="40" y="574">same shape, different species</text>
+      </g>
+
+      <rect data-l="dark" class="off" width="800" height="600" fill="var(--vs-bench)"></rect>
+
+      <!-- 3 · the instrument: laser, flight tube, detector, spectrum -->
+      <g data-l="bench" class="off">
+        <use href="#vs-bench-back" x="0" y="0" width="800" height="400"></use>
+        <text x="174" y="82" class="lab soft small">laser</text>
+        <text x="40" y="372" class="lab soft small">sample from a leg</text>
+        <path data-l="beam" class="off" d="M110,98 L128,262" stroke="var(--vs-laser)" stroke-width="4" stroke-linecap="round"></path>
+        <circle data-l="spark" class="off" cx="128" cy="264" r="13" fill="var(--vs-laser)" opacity="0.9"></circle>
+        <text x={tube.x + tube.w / 2} y="222" text-anchor="middle" class="lab soft small">flight tube</text>
+        <text x="760" y="206" text-anchor="end" class="lab soft small">detector</text>
+        {ions.map((ion) => (
+          <g data-l="ion" class="off" data-size={ion.size} data-lag={ion.lag} set:html={molecule(236, ion.y, ion.size)}></g>
+        ))}
+        <g data-l="sorted" class="off" set:html={sorted.map(([x, y, k]) => molecule(x, y, k)).join('')}></g>
+        <use href="#vs-bench-front" x="0" y="0" width="800" height="400"></use>
+        <text data-l="first" class="off lab" x={tube.x + tube.w / 2} y="340" text-anchor="middle">light molecules arrive first</text>
+        <g stroke="var(--vs-panel-2)" stroke-linecap="round">
+          {ticks.map((x) => <path d={`M${x},420 V${baseY}`} stroke-width="1" stroke-dasharray="2 6" opacity="0.55"></path>)}
+          <path d={`M250,${baseY} H736`} stroke-width="2"></path>
+          {ticks.map((x) => <path d={`M${x},${baseY} v7`} stroke-width="2"></path>)}
+        </g>
+        <g clip-path="url(#vs-wipe)">
+          <g transform="translate(256,404)">
+            <path d={area} fill="url(#vs-area)"></path>
+            <path d={spectra.main.d} fill="none" stroke="var(--vs-trace)" stroke-width="6" stroke-linejoin="round" opacity="0.14"></path>
+            <path d={spectra.main.d} fill="none" stroke="var(--vs-trace)" stroke-width="1.8" stroke-linejoin="round"></path>
+          </g>
+        </g>
+        <text data-l="axis" class="off lab soft small" x="736" y="590" text-anchor="end">heavier molecules →</text>
+        <text data-l="axis" class="off lab soft small" x="40" y="486">the spectrum</text>
+      </g>
+
+      <!-- 4 · how many spectra each species has, on one scale -->
+      <g data-l="data" class="off">
+        <text data-l="n-mosq" x="40" y="86" class="num" font-size="52">0</text>
+        <text x="42" y="116" class="lab soft small">spectra · 12 mosquito species</text>
+        <g style="color: var(--vs-mosq)"><use href="#vs-mosquito-mini" x="318" y="40" width="66" height="44"></use></g>
+        {mosq.map((s) => <rect data-l="bar" data-w={s.w} x="40" y={s.y} width="0" height="22" rx="3" fill="var(--vs-mosq)"></rect>)}
+        <text data-l="bar-note" class="off lab small" x={48 + mMax.w} y={mMax.y + 19}>{mMax.n}</text>
+        <text data-l="bar-note" class="off lab small" x={48 + mMin.w} y={mMin.y + 19}>{mMin.n}</text>
+
+        <text data-l="n-tick" x="430" y="86" class="num" font-size="52">0</text>
+        <text x="432" y="116" class="lab soft small">spectra · 18 tick species</text>
+        <g style="color: var(--vs-tick)"><use href="#vs-tick-mini" x="712" y="38" width="48" height="48"></use></g>
+        {tick.map((s) => <rect data-l="bar" data-w={s.w} x="430" y={s.y} width="0" height="15" rx="2.5" fill="var(--vs-tick)"></rect>)}
+        <text data-l="bar-note" class="off lab small" x={438 + tMax.w} y={tMax.y + 16}>{tMax.n}</text>
+        <text data-l="bar-note" class="off lab small" x={438 + tMin.w} y={tMin.y + 16}>only {tMin.n}</text>
+        <text data-l="bar-note" class="off lab soft small" x="40" y="582">one bar per species: how many spectra it has</text>
+      </g>
+
+      <!-- 5 · three spectra, one network, three points -->
+      <g data-l="compare" class="off">
+        {rows.map((row) => (
+          <g data-l="feed" class="off">
+            <text x="40" y={row.cy - 62} class="lab soft small">{row.label}</text>
+            <rect x="40" y={row.cy - 52} width="210" height="104" rx="8" fill="var(--vs-panel)"></rect>
+            <path d={row.d} transform={`translate(55,${row.cy - 34})`} fill="none" stroke="var(--vs-trace)" stroke-width="1.6" stroke-linejoin="round"></path>
+            <path d={`M258,${row.cy} H286 M392,${row.cy} H426`} stroke="var(--vs-on-2)" stroke-width="2" stroke-linecap="round"></path>
+            <path d={`M292,${row.cy - 44} L386,${row.cy - 22} V${row.cy + 22} L292,${row.cy + 44} Z`} fill="var(--vs-panel-2)" stroke="var(--vs-steel)" stroke-width="1.2" stroke-opacity="0.6"></path>
+          </g>
+        ))}
+        <path data-l="same-net" class="off" d="M339,206 V266 M339,376 V436" stroke="var(--vs-steel)" stroke-width="2" stroke-dasharray="3 6" stroke-linecap="round"></path>
+        <text data-l="same-net" class="off lab small" x="40" y="584">one network reads all three</text>
+        <g data-l="space" class="off">
+          <rect x="440" y="98" width="320" height="444" rx="8" fill="var(--vs-panel)"></rect>
+          <circle data-l="margin" class="off" cx={anchor[0]} cy={anchor[1]} r="92" fill="none" stroke="var(--vs-on-2)" stroke-width="1.5" stroke-dasharray="4 7"></circle>
+          <line data-l="link-pos" x1={anchor[0]} y1={anchor[1]} x2={pos.from[0]} y2={pos.from[1]} stroke="var(--vs-on)" stroke-width="2" data-to={pos.to.join(',')}></line>
+          <line data-l="link-neg" x1={anchor[0]} y1={anchor[1]} x2={neg.from[0]} y2={neg.from[1]} stroke="var(--vs-on-2)" stroke-width="2" stroke-dasharray="2 6" data-to={neg.to.join(',')}></line>
+          <circle cx={anchor[0]} cy={anchor[1]} r="12" fill="var(--vs-mosq)" stroke="var(--vs-on)" stroke-width="3"></circle>
+          <text x={anchor[0] - 22} y={anchor[1] + 8} text-anchor="end" class="lab small">reference</text>
+          <g data-l="pt-pos" data-from={pos.from.join(',')} data-to={pos.to.join(',')}>
+            <circle r="11" fill="var(--vs-mosq)"></circle>
+            <text x="18" y="-8" class="lab small">same</text>
+          </g>
+          <g data-l="space-note" class="off">
+            <text x="460" y="506" class="lab soft small">same species: pulled close</text>
+            <text x="460" y="532" class="lab soft small">other species: pushed away</text>
+          </g>
+          <g data-l="pt-neg" data-from={neg.from.join(',')} data-to={neg.to.join(',')}>
+            <circle r="10" fill="var(--vs-panel)" stroke="var(--vs-mosq)" stroke-width="3.5"></circle>
+            <text x="18" y="8" class="lab small">other</text>
+          </g>
+        </g>
+      </g>
+
+      <!-- 6 and 7 · two maps: every spectrum is a point, every species an island -->
+      <g data-l="islands" class="off">
+        <rect x={panels.m.x} y={panels.m.y} width={panels.m.w} height={panels.m.h} rx="8" fill="var(--vs-panel)"></rect>
+        <rect x={panels.t.x} y={panels.t.y} width={panels.t.w} height={panels.t.h} rx="8" fill="var(--vs-panel)"></rect>
+        <g style="color: var(--vs-mosq)"><use href="#vs-mosquito-mini" x="40" y="38" width="66" height="44"></use></g>
+        <text x="116" y="76" class="lab">mosquitoes</text>
+        <g style="color: var(--vs-tick)"><use href="#vs-tick-mini" x="410" y="36" width="48" height="48"></use></g>
+        <text x="468" y="76" class="lab">ticks</text>
+        {isles.map((i) => <circle data-l="isle" class="off" cx={i.x} cy={i.y} r={i.r} fill="none" stroke="var(--vs-on-2)" stroke-width="1.2" opacity="0.7"></circle>)}
+        {dots.map((d) => (
+          <circle data-l="pt" class="off" data-a={d.a.join(',')} data-b={d.b.join(',')} r="3.4" fill={d.f === 'm' ? 'var(--vs-mosq)' : 'var(--vs-tick)'}></circle>
+        ))}
+        <text data-l="cap" class="off lab soft" x="40" y="520">12 species, 826 spectra</text>
+        <text data-l="cap" class="off lab soft" x="410" y="520">18 species, 310 spectra</text>
+        <g data-l="cap" class="off">
+          <circle cx="46" cy="560" r="4" fill="var(--vs-mosq)"></circle>
+          <text x="60" y="568" class="lab soft small">one spectrum</text>
+          <circle cx="232" cy="560" r="11" fill="none" stroke="var(--vs-on-2)" stroke-width="1.2"></circle>
+          <text x="252" y="568" class="lab soft small">one species</text>
+        </g>
+        <!-- 7 · a new spectrum is named after its neighbours -->
+        {neighbours.map((n) => <line data-l="nn" class="off" x1={landing[0]} y1={landing[1]} x2={n.b[0]} y2={n.b[1]} stroke="var(--vs-on)" stroke-width="1.6"></line>)}
+        <g data-l="newpt" class="off" data-to={landing.join(',')}>
+          <circle r="8.5" fill="var(--vs-on)" stroke="var(--vs-bench)" stroke-width="2.5"></circle>
+        </g>
+        <g data-l="name" class="off">
+          <path d={`M${landing[0] + 8},${landing[1] - 8} L150,${panels.m.y + 44}`} stroke="var(--vs-on)" stroke-width="1.5" stroke-linecap="round"></path>
+          <rect x="132" y={panels.m.y + 8} width="250" height="36" rx="6" fill="var(--vs-on)"></rect>
+          <text x="144" y={panels.m.y + 34} class="lab sci dark">Anopheles albimanus</text>
+        </g>
+        <g data-l="new-key" class="off">
+          <circle cx="47" cy="496" r="7" fill="var(--vs-on)"></circle>
+          <text x="62" y="504" class="lab soft small">a new spectrum, named after its neighbours</text>
+        </g>
+        <g data-l="acc" class="off">
+          <text x="40" y="560" class="num" font-size="50">99%</text>
+          <text x="178" y="536" class="lab soft small">of mosquito spectra</text>
+          <text x="178" y="562" class="lab soft small">named correctly</text>
+        </g>
+        <g data-l="acc" class="off">
+          <text x="410" y="560" class="num" font-size="50">93%</text>
+          <text x="548" y="536" class="lab soft small">of tick spectra</text>
+          <text x="548" y="562" class="lab soft small">named correctly</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .vs {
+    /* never taller than the space under the site header */
+    width: min(100%, calc((100svh - var(--header-h) - 3rem) * 4 / 3));
+    min-width: min(100%, 300px);
+    margin-inline: auto;
+  }
+  .vs-canvas {
+    position: relative; /* the WebGL light layer (gl.ts) is laid over the SVG */
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--vs-paper);
+  }
+  /* with the light layer on, it draws every spectrum; the SVG stand-in points step aside */
+  .vs[data-gl] [data-l='pt'] {
+    display: none;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  .off {
+    opacity: 0;
+    visibility: hidden;
+  }
+  text {
+    fill: var(--vs-on);
+  }
+  .num {
+    font-weight: 680;
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .lab {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 22px;
+  }
+  .strong {
+    font-weight: 650;
+  }
+  .sci {
+    font-style: italic;
+  }
+  .soft {
+    fill: var(--vs-on-2);
+  }
+  .ink {
+    fill: var(--ink);
+  }
+  .white {
+    fill: #fff;
+  }
+  .dark {
+    fill: #101a2b;
+  }
+
+  @media (max-width: 900px) {
+    .vs {
+      width: min(100%, calc((100svh - var(--header-h) - 17rem) * 4 / 3));
+    }
+  }
+</style>

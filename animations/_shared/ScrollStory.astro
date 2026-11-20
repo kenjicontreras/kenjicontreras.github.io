@@ -1,0 +1,426 @@
+---
+// Reusable layout for a scroll-driven story: a visual stage that stays in
+// view while short text steps scroll past it. The stage markup comes from the
+// story (slot "stage"); its animation is the scene registered under `scene`
+// in src/scenes/index.ts and is loaded by src/scripts/motion.ts.
+import type { StoryContent } from './types';
+
+interface Props {
+  content: StoryContent;
+  /** Key in src/scenes/index.ts. */
+  scene: string;
+}
+const { content: c, scene } = Astro.props;
+const total = c.steps.length;
+---
+
+<section class="story" id={c.id} data-case data-story aria-labelledby={`${c.id}-title`}>
+  <div class="wrap">
+    <header class:list={['head', { solo: !c.intro && !c.role }]}>
+      <div>
+        <h3 id={`${c.id}-title`}>{c.title}</h3>
+        <p class="meta">{c.meta}</p>
+      </div>
+      {
+        (c.intro || c.role) && (
+          <div>
+            {c.intro && <p class="intro">{c.intro}</p>}
+            {c.role && <p class="role">{c.role}</p>}
+          </div>
+        )
+      }
+    </header>
+
+    <div class="body">
+      <div class="stage-col">
+        <figure class="stage" data-scene={scene} data-step="1">
+          <div class="stage-art" aria-hidden="true"><slot name="stage" /></div>
+          <!-- read by screen readers only; the picture credit is in the footer -->
+          <figcaption class="alt">{c.stageAlt}</figcaption>
+        </figure>
+      </div>
+
+      <ol class="steps">
+        {
+          c.steps.map((s, i) => (
+            <li class="step" data-step-item>
+              <p class="count" aria-hidden="true">
+                {i + 1} / {total}
+                {s.part && <span class="part"> · {s.part}</span>}
+              </p>
+              <h4>{s.title}</h4>
+              <p class="text">{s.body}</p>
+              {s.points && (
+                <ul class="points">
+                  {s.points.map((pt) => <li>{pt}</li>)}
+                </ul>
+              )}
+              {s.stat && (
+                <p class="stat">
+                  <strong>{s.stat.value}</strong> <span>{s.stat.label}</span>
+                </p>
+              )}
+              {s.facts && (
+                <ul class:list={['facts', { list: s.factsLayout === 'list' }]}>
+                  {s.facts.map((f) => (
+                    <li>
+                      <strong>{f.value}</strong> {f.label}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {s.hood && (
+                <p class="hood">
+                  <span>Under the hood:</span> {s.hood}
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <footer class="foot">
+      <ul class="chips" aria-label="Tools used">{c.stack.map((s) => <li>{s}</li>)}</ul>
+      {
+        c.source && (
+          <a class="source" href={c.source.href} target="_blank" rel="noopener">
+            {c.source.label}
+          </a>
+        )
+      }
+      <slot name="foot" />
+      {
+        c.related && (
+          <div class="related">
+            <p class="related-head">Related papers</p>
+            <ul>
+              {c.related.map((r) => (
+                <li>
+                  <a href={r.href} target="_blank" rel="noopener">{r.title}</a>
+                  <span>
+                    {r.authors}, {r.venue}
+                    {r.lead && <em class="lead">Lead author</em>}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+      {c.credit && <p class="credit">{c.credit}</p>}
+    </footer>
+  </div>
+</section>
+
+<script>
+  // src/scripts/motion.ts skips every scene when the reader prefers reduced
+  // motion. A story still has to change state with its text, so in that case
+  // it is started here; createStory() then jumps between states, no tweening.
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { scenes } from '../../src/scenes';
+
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    gsap.registerPlugin(ScrollTrigger);
+    document.querySelectorAll<HTMLElement>('[data-story] [data-scene]').forEach(async (stage) => {
+      // Stories inside the landing page's project tabs are mounted by the tab controller.
+      if (stage.closest('[data-tabs]')) return;
+      const load = scenes[stage.dataset.scene || ''];
+      const section = stage.closest<HTMLElement>('[data-story]');
+      if (!load || !section) return;
+      const scene = await load();
+      scene({ stage, section, gsap, ScrollTrigger });
+    });
+  }
+</script>
+
+<style>
+  .story {
+    /* where on the screen a step "plays", as a fraction of viewport height */
+    --story-anchor: 0.56;
+    padding-block: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  /* Text takes a third of the width; the stage gets the rest. */
+  .head,
+  .body {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    column-gap: clamp(1.5rem, 3vw, 3rem);
+  }
+  .head {
+    /* the title needs more room than the step text below it */
+    grid-template-columns: minmax(0, 6fr) minmax(0, 6fr);
+    row-gap: 0.75rem;
+    align-items: end;
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+  }
+  /* no intro or role: the title runs on one line across the section */
+  .head.solo {
+    grid-template-columns: 1fr;
+  }
+  h3 {
+    font-size: var(--step-3);
+    font-stretch: 116%;
+    line-height: 1.1;
+  }
+  .meta {
+    margin-top: 0.4rem;
+    font-size: var(--step--1);
+    color: var(--slate);
+  }
+  .intro {
+    font-size: 1.125rem;
+    line-height: 1.5;
+    max-width: 62ch;
+  }
+  .role {
+    margin-top: 0.3rem;
+    font-size: var(--step--1);
+    color: var(--slate);
+    max-width: 70ch;
+  }
+
+  .stage-col {
+    order: 2;
+  }
+  .stage {
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+    margin: 0;
+  }
+  .alt {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Steps are top-aligned and short, so the text of the active step sits
+     beside the stage and the next one is already in view below it. */
+  .steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .step {
+    min-height: 54vh;
+    padding-block: 0.25rem 2rem;
+  }
+  .step:first-child {
+    min-height: 68vh;
+  }
+  .step:last-child {
+    min-height: 66vh;
+  }
+  .is-live .step {
+    opacity: 0.32;
+    transition: opacity 320ms;
+  }
+  .is-live .step.is-active {
+    opacity: 1;
+  }
+  .count {
+    font-size: 0.8rem;
+    color: var(--slate);
+    font-variant-numeric: tabular-nums;
+    margin-bottom: 0.3rem;
+  }
+  .count .part {
+    color: var(--teal);
+    font-weight: 650;
+  }
+  h4 {
+    margin: 0;
+    font-size: 1.375rem;
+    font-weight: 650;
+    font-stretch: 112%;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .text {
+    margin-top: 0.5rem;
+    line-height: 1.5;
+    max-width: 44ch;
+  }
+  .points {
+    list-style: none;
+    margin: 0.6rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+    max-width: 44ch;
+    font-size: 0.95rem;
+    line-height: 1.45;
+    color: var(--slate);
+  }
+  .points li {
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  .points li::before {
+    content: '';
+    position: absolute;
+    left: 0.1rem;
+    top: 0.62em;
+    width: 0.5rem;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--teal);
+  }
+  .stat {
+    margin-top: 0.8rem;
+    display: grid;
+    gap: 0.1rem;
+  }
+  .stat strong {
+    font-size: var(--step-3);
+    font-weight: 680;
+    font-stretch: 118%;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--teal-deep);
+  }
+  .stat span {
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--slate);
+    max-width: 38ch;
+  }
+  .facts {
+    list-style: none;
+    margin: 0.7rem 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.25rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--slate);
+  }
+  .facts.list {
+    display: grid;
+    gap: 0.3rem;
+    max-width: 42ch;
+  }
+  .facts strong {
+    color: var(--ink);
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .hood {
+    margin-top: 0.8rem;
+    padding-left: 0.75rem;
+    border-left: 2px solid var(--teal);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    color: var(--slate);
+    max-width: 46ch;
+  }
+  .hood span {
+    font-weight: 650;
+    color: var(--teal-deep);
+  }
+
+  .foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 2rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+  }
+  .source {
+    font-weight: 600;
+  }
+  .related {
+    flex-basis: 100%;
+  }
+  .related-head {
+    font-size: var(--step--1);
+    font-weight: 650;
+    color: var(--teal-deep);
+    margin-bottom: 0.5rem;
+  }
+  .related ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem 2rem;
+  }
+  .related li {
+    display: grid;
+    align-content: start;
+    gap: 0.2rem;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .related a {
+    font-weight: 600;
+  }
+  .related span {
+    color: var(--slate);
+    font-size: 0.82rem;
+  }
+  .lead {
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: 3px;
+    background: var(--lagoon);
+    color: var(--teal-deep);
+    font-style: normal;
+    font-weight: 600;
+    font-size: 0.75rem;
+  }
+  @media (max-width: 900px) {
+    .related ul {
+      grid-template-columns: 1fr;
+    }
+  }
+  .credit {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--slate);
+    max-width: 90ch;
+  }
+
+  /* Phone and narrow tablet: the stage sticks to the top, text scrolls below. */
+  @media (max-width: 900px) {
+    .story {
+      --story-anchor: 0.86;
+    }
+    .head {
+      grid-template-columns: 1fr;
+    }
+    .body {
+      display: block;
+    }
+    .stage-col {
+      position: sticky;
+      top: var(--header-h);
+      z-index: 2;
+      margin-inline: calc(-1 * var(--gutter));
+      padding: 0.4rem var(--gutter) 0.5rem;
+      background: var(--paper);
+      border-bottom: 1px solid var(--rule);
+    }
+    .stage {
+      position: static;
+    }
+    .step,
+    .step:first-child,
+    .step:last-child {
+      min-height: 48vh;
+      padding-block: 1.25rem 1.5rem;
+    }
+  }
+</style>

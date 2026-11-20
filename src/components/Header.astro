@@ -1,0 +1,84 @@
+---
+import { profile } from '../data/profile';
+---
+
+<header class="header" data-header>
+  <div class="wrap inner">
+    <a href="#top" class="name">{profile.name}</a>
+    <nav aria-label="Sections">
+      <a class="draw" href="#skills">Skills</a>
+      <a class="draw" href="#work">Projects</a>
+      <a class="draw" href="#experience">Experience</a>
+      <a class="draw" href="#about">About</a>
+      <a class="draw contact-link" href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: var(--header-h);
+    background: var(--paper);
+    border-bottom: 1px solid transparent;
+    transition: border-color 200ms;
+  }
+  .header:global(.is-scrolled) {
+    border-bottom-color: var(--rule);
+  }
+  .inner {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .name {
+    font-weight: 700;
+    font-stretch: 118%;
+    color: var(--ink);
+    text-decoration: none;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  nav a:not(.btn) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 0.75rem;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  nav a:not(.btn):hover {
+    color: var(--teal);
+  }
+  .name {
+    white-space: nowrap;
+  }
+  /* Contact stays visible on phones, set off by a rule from the rest. */
+  nav a.contact-link {
+    margin-left: 0.5rem;
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--rule);
+    font-weight: 650;
+    color: var(--teal-deep);
+  }
+  @media (max-width: 640px) {
+    nav a:not(.contact-link) {
+      display: none;
+    }
+    nav a.contact-link {
+      border-left: 0;
+      padding-left: 0.75rem;
+    }
+  }
+</style>

@@ -1,0 +1,10 @@
+{
+  "status": "Real. Values from Guzman et al. 2025 and the lab's public summary (see brief.md fact sheet).",
+  "nodes": [
+    { "value": "1,931,079", "label": "audio files analysed", "from": 5 },
+    { "value": "64,000+", "label": "hours of recording", "from": 5 },
+    { "value": "110", "label": "manatees identified", "from": 6 },
+    { "value": "9", "label": "crossed the border", "from": 6 },
+    { "value": "984 km", "label": "proposed corridor", "from": 8 }
+  ]
+}

@@ -1,0 +1,138 @@
+---
+import { experience } from '../data/work';
+---
+
+<section class="block block-sand" id="experience" aria-labelledby="experience-title">
+  <div class="wrap">
+    <div class="block-head">
+      <h2 id="experience-title">Experience</h2>
+      <p>Four funded research projects with the Smithsonian, UTP and INDICASAT-AIP, then survey analytics at CID Gallup.</p>
+    </div>
+
+    <ol class="roles">
+      {
+        experience.map((r) => (
+          <li class="role">
+            <div class="when">
+              <p class="years">{r.years}</p>
+            </div>
+            <div class="what">
+              <h3>{r.title}</h3>
+              <p class="org">{r.org}</p>
+              {r.orgNote && <p class="org-note">{r.orgNote}</p>}
+              <p class="summary">{r.summary}</p>
+              {r.itemsHead && <p class="items-head">{r.itemsHead}</p>}
+              <dl class="items">
+                {r.items.map((it) => (
+                  <div>
+                    <dt>{it.label}</dt>
+                    <dd>{it.text}</dd>
+                    {it.codes?.map((c) => <dd class="code">{c}</dd>)}
+                  </div>
+                ))}
+              </dl>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .roles {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .role {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: 1rem clamp(1.5rem, 4vw, 4rem);
+    padding-block: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .role:first-child {
+    border-top: 1.5px solid var(--ink);
+  }
+  .years {
+    font-weight: 600;
+    color: var(--teal-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  h3 {
+    font-size: var(--step-2);
+  }
+  .org {
+    margin-top: 0.3rem;
+    color: var(--slate);
+    font-weight: 500;
+  }
+  .org-note {
+    margin-top: 0.2rem;
+    max-width: 62ch;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+  .summary {
+    margin-top: 1rem;
+    max-width: 62ch;
+    font-family: var(--font-text);
+    font-size: 1.125rem;
+  }
+  .items-head {
+    margin-top: 1.5rem;
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .items-head + .items {
+    margin-top: 0.75rem;
+  }
+  .items dd.code {
+    margin-top: 0.3rem;
+  }
+  .items dd.code + dd.code {
+    margin-top: 0.1rem;
+  }
+  .items dd.code {
+    font-size: 0.78rem;
+    color: var(--slate);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .items {
+    margin: 1.25rem 0 0;
+    display: grid;
+    /* as many equal columns as there are entries, up to the row's width */
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 1rem 2.5rem;
+  }
+  .items div {
+    padding-left: 0.85rem;
+    border-left: 2px solid #ddd5c3;
+  }
+  dt {
+    font-size: var(--step--1);
+    font-weight: 650;
+    color: var(--teal-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  dd {
+    margin: 0.15rem 0 0;
+    color: var(--slate);
+    font-size: 0.97rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 860px) {
+    .role {
+      grid-template-columns: 1fr;
+      gap: 0.4rem;
+    }
+    .items {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

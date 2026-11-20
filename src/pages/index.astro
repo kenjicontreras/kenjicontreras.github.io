@@ -1,0 +1,184 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Skills from '../components/Skills.astro';
+import ProjectTabs from '../components/ProjectTabs.astro';
+import Experience from '../components/Experience.astro';
+import About from '../components/About.astro';
+import { profile } from '../data/profile';
+
+const cvHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/' + profile.cv;
+const contact = [
+  profile.email && { label: 'Email me', href: `mailto:${profile.email}` },
+  profile.links.linkedin && { label: 'LinkedIn', href: profile.links.linkedin },
+  profile.links.github && { label: 'GitHub', href: profile.links.github },
+].filter(Boolean) as { label: string; href: string }[];
+---
+
+<Base
+  title={`${profile.name}, data scientist and researcher`}
+  description="Data scientist and researcher in Panama. Machine learning, computer vision, LLM-powered tools and AI workflow automation for research and business."
+  pageType="service"
+>
+  <a href="#main" class="skip">Skip to content</a>
+  <Header />
+
+  <main id="main">
+    <Hero />
+    <Skills />
+    <ProjectTabs />
+    <Experience />
+    <About />
+  </main>
+
+  <footer class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap cgrid">
+      <div class="main">
+      <h2 id="contact-title">Send me the data you’re stuck with.</h2>
+      <p class="lede">Tell me what you’re working on, whether it’s data to analyse or a repetitive process to automate, and what a good result looks like. I’ll tell you whether I can help, and how I’d do it.</p>
+      <div class="links">
+        {contact.map((c, i) => <a class:list={['btn', i === 0 ? 'btn-light' : 'btn-ghost']} href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>)}
+        {profile.cv && <a class="btn btn-ghost" href={cvHref} download>Download CV (PDF)</a>}
+      </div>
+      {profile.email && <p class="addr">or write to <a href={`mailto:${profile.email}`}>{profile.email}</a></p>}
+      </div>
+      <aside class="next" aria-labelledby="next-title">
+        <h3 id="next-title">How it works</h3>
+        <p>We start with a short call about your data or process and what it should achieve. You then get a written proposal with the scope, timeline and price, and the work is delivered in stages you can check, with code and documentation at the end. In English or Spanish.</p>
+      </aside>
+    </div>
+    <div class="wrap closing">
+      <p>{profile.name} · {profile.location.split(',')[0]} · © {new Date().getFullYear()}</p>
+      <p class="plinks">
+        {profile.links.scholar && <a class="draw" href={profile.links.scholar} target="_blank" rel="noopener">Google Scholar</a>}
+        {profile.links.researchgate && <a class="draw" href={profile.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>}
+        {profile.cv && <a class="draw" href={cvHref} download>CV (PDF)</a>}
+      </p>
+    </div>
+  </footer>
+</Base>
+
+<style>
+  .contact {
+    background: var(--navy);
+    color: #e9f3f4;
+    padding-block: clamp(4.5rem, 10vw, 8rem) clamp(1rem, 2vw, 1.5rem);
+  }
+  .contact h2 {
+    font-size: var(--step-5);
+    font-stretch: 112%;
+    max-width: 14ch;
+  }
+  .cgrid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 3rem clamp(2rem, 6vw, 6rem);
+    align-items: end;
+  }
+  /* flush with the right edge, like the header's Contact link */
+  .next {
+    justify-self: end;
+    width: min(100%, 42ch);
+  }
+  .next h3 {
+    font-size: var(--step-0);
+    font-stretch: 100%;
+    font-weight: 650;
+    color: #7fd6cf;
+  }
+  .next p {
+    margin-top: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(233, 243, 244, 0.18);
+    color: #e9f3f4;
+    font-family: var(--font-text);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    max-width: 42ch;
+  }
+  .closing {
+    margin-top: clamp(3.5rem, 7vw, 5.5rem);
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(233, 243, 244, 0.18);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem 2rem;
+    color: #b9d0d5;
+    font-size: var(--step--1);
+  }
+  .plinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+  .plinks a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #e9f3f4;
+  }
+  .plinks a:hover {
+    color: #7fd6cf;
+  }
+  @media (max-width: 860px) {
+    .next {
+      justify-self: start;
+    }
+    .cgrid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .contact .lede {
+    margin-top: 1.5rem;
+    font-family: var(--font-text);
+    max-width: 52ch;
+    font-size: var(--step-1);
+    color: #b9d0d5;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-top: 2.25rem;
+  }
+  .addr {
+    margin-top: 1rem;
+    color: #b9d0d5;
+  }
+  .addr a {
+    color: #e9f3f4;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .addr a:hover {
+    color: #7fd6cf;
+  }
+  .btn-light {
+    background: #7fd6cf;
+    color: var(--navy);
+  }
+  .btn-light:hover {
+    background: #a6e5df;
+    color: var(--navy);
+  }
+  .btn-ghost {
+    border: 1.5px solid rgba(233, 243, 244, 0.45);
+    color: #e9f3f4;
+  }
+  .btn-ghost:hover {
+    border-color: #7fd6cf;
+    color: #7fd6cf;
+  }
+  .contact :focus-visible {
+    outline-color: #7fd6cf;
+  }
+  @media (max-width: 520px) {
+    .links .btn {
+      width: 100%;
+    }
+  }
+</style>

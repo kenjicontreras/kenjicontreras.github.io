@@ -1,0 +1,60 @@
+---
+// Index of the scroll-story preview pages. A review surface; all five stories
+// also run as tabs on the landing page (see animations/PROJECTS.md).
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import { content as manatees } from '../../../animations/binational-manatees/content';
+import { content as drone } from '../../../animations/drone-manatees/content';
+import { content as spectra } from '../../../animations/vector-spectra/content';
+import { content as watermelon } from '../../../animations/watermelon-varieties/content';
+import { content as survey } from '../../../animations/survey-nlp/content';
+
+const stories = [manatees, drone, spectra, watermelon, survey];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base title="Preview: scroll stories" description="Review pages for the research scroll stories.">
+  <Header />
+  <main id="main" class="wrap list">
+    <h1>Scroll stories</h1>
+    <p class="note">Preview pages. All five also run as tabs on the landing page.</p>
+    <ul>
+      {stories.map((s) => (
+        <li>
+          <a href={`${base}/animations/${s.id}`}>{s.title}</a>
+          <span>{s.steps.length} steps · {s.meta}</span>
+        </li>
+      ))}
+    </ul>
+  </main>
+</Base>
+
+<style>
+  .list {
+    padding-block: calc(var(--header-h) + 2.5rem) 6rem;
+  }
+  h1 {
+    font-size: var(--step-3);
+  }
+  .note {
+    color: var(--slate);
+    margin-block: 0.5rem 2rem;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1.25rem;
+    max-width: 46rem;
+  }
+  a {
+    display: block;
+    font-size: var(--step-1);
+    font-weight: 650;
+    color: var(--ink);
+  }
+  span {
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+</style>

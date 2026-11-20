@@ -1,0 +1,131 @@
+{
+ "status": "real: Tables 1 and 2 of Merchan et al. 2023. The tick counts in Table 2 add up to 309; the paper gives 310 in total.",
+ "totals": {
+  "mosquitoes": 826,
+  "ticks": 310
+ },
+ "mosquitoes": [
+  {
+   "name": "Anopheles albimanus",
+   "n": 119
+  },
+  {
+   "name": "Anopheles apicimacula",
+   "n": 110
+  },
+  {
+   "name": "Anopheles aquasalis",
+   "n": 56
+  },
+  {
+   "name": "Anopheles darlingi",
+   "n": 40
+  },
+  {
+   "name": "Anopheles malefactor",
+   "n": 39
+  },
+  {
+   "name": "Anopheles nuneztovari",
+   "n": 192
+  },
+  {
+   "name": "Anopheles pseudopunctipennis",
+   "n": 45
+  },
+  {
+   "name": "Anopheles punctimacula",
+   "n": 81
+  },
+  {
+   "name": "Anopheles strodei",
+   "n": 49
+  },
+  {
+   "name": "Anopheles triannulatus",
+   "n": 26
+  },
+  {
+   "name": "Anopheles neivai",
+   "n": 24
+  },
+  {
+   "name": "Chagasia bathana",
+   "n": 45
+  }
+ ],
+ "ticks": [
+  {
+   "name": "Amblyomma cajennense",
+   "n": 6
+  },
+  {
+   "name": "Amblyomma calcaratum",
+   "n": 15
+  },
+  {
+   "name": "Amblyomma dissimile",
+   "n": 9
+  },
+  {
+   "name": "Amblyomma geayi",
+   "n": 12
+  },
+  {
+   "name": "Amblyomma nodosum",
+   "n": 10
+  },
+  {
+   "name": "Amblyomma oblongoguttatum",
+   "n": 8
+  },
+  {
+   "name": "Amblyomma ovale",
+   "n": 11
+  },
+  {
+   "name": "Amblyomma pecarium",
+   "n": 11
+  },
+  {
+   "name": "Amblyomma sabanerae",
+   "n": 11
+  },
+  {
+   "name": "Amblyomma varium",
+   "n": 9
+  },
+  {
+   "name": "Amblyomma naponense",
+   "n": 9
+  },
+  {
+   "name": "Amblyomma tapirellum",
+   "n": 56
+  },
+  {
+   "name": "Dermacentor nitens",
+   "n": 60
+  },
+  {
+   "name": "Haemaphysalis juxtakochi",
+   "n": 6
+  },
+  {
+   "name": "Ixodes affinis",
+   "n": 9
+  },
+  {
+   "name": "Ixodes boliviensis",
+   "n": 11
+  },
+  {
+   "name": "Rhipicephalus microplus",
+   "n": 50
+  },
+  {
+   "name": "Rhipicephalus sanguineus",
+   "n": 6
+  }
+ ]
+}

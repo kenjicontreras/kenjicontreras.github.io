@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.DS_Store
+
+# local sources and tool state, not part of the site
+resources/
+.claude/
+.taste-skill/

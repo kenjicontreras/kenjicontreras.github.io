@@ -1,0 +1,26 @@
+/* Story tokens for "watermelon-varieties". A packing shed: cream paper, wooden
+   crates, dark striped rinds, one red accent for the flesh. The three
+   varieties are the only categories, validated with the dataviz skill's
+   validate_palette.js on --wv-night and, in the light trio, on --wv-cream
+   (see style.md). They are deliberately not green: every fruit is green. */
+.wv {
+  --wv-cream: #f6f2e6; /* light stage */
+  --wv-night: #14231a; /* dark stage for the model steps */
+  --wv-panel: #1e3326; /* cards on the dark stage */
+  --wv-panel-2: #2d4a37; /* lighter parts, grid lines */
+  --wv-rind: #2b5a34; /* rind */
+  --wv-rind-2: #5d8f47; /* light stripes */
+  --wv-stripe: #17351f; /* dark stripes */
+  --wv-flesh: #e4485a; /* cut fruit. The single warm accent. */
+  --wv-crate: #c9a36b; /* wood */
+  --wv-crate-2: #a37f4c; /* wood in shade */
+  --wv-belt: #3b4a44; /* conveyor */
+  --wv-anna: #2e93b8; /* Anna on the dark stage */
+  --wv-joya: #c4832a; /* Joya on the dark stage */
+  --wv-quetzali: #a06fc8; /* Quetzali on the dark stage */
+  --wv-anna-light: #1f7fa3; /* the same trio on cream */
+  --wv-joya-light: #b3741a;
+  --wv-quetzali-light: #8a4fa8;
+  --wv-on: #edf3ea; /* primary text on the dark stage */
+  --wv-on-2: #adc0ae; /* secondary text on the dark stage */
+}

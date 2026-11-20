@@ -1,0 +1,48 @@
+{
+ "status": "real: Fig. 1, Table II and Fig. 8 of Contreras et al. 2022 (IEEE ISIE)",
+ "photos": {
+  "anna": 120,
+  "joya": 90,
+  "quetzali": 120
+ },
+ "accuracy": {
+  "transfer": 0.84,
+  "metric": 0.81
+ },
+ "confusion": {
+  "transfer": {
+   "anna": [
+    17,
+    1,
+    2
+   ],
+   "joya": [
+    3,
+    14,
+    1
+   ],
+   "quetzali": [
+    1,
+    2,
+    25
+   ]
+  },
+  "metric": {
+   "anna": [
+    29,
+    2,
+    0
+   ],
+   "joya": [
+    5,
+    26,
+    4
+   ],
+   "quetzali": [
+    3,
+    5,
+    26
+   ]
+  }
+ }
+}

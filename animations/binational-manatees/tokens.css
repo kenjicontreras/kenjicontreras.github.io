@@ -1,0 +1,23 @@
+/* Story tokens for "binational-manatees". They extend the site tokens in
+   src/styles/global.css (teal + navy on paper) with colours sampled from the
+   reference slides: sage and moss greens, cream panels, deep water.
+   Categorical pair (--bm-cr / --bm-pa) validated with the dataviz skill's
+   validate_palette.js on both stage surfaces (see style.md). */
+.bm {
+  --bm-deep: #0b2230; /* deep-water stage, steps 2 to 6 */
+  --bm-water: #123c4d; /* land on the dark map, tiles, mid-water */
+  --bm-water-2: #1b5266; /* lighter water accents, rivers on dark */
+  --bm-moss: #5f7355; /* mangrove, corridor band */
+  --bm-reed: #3a4535; /* darkest vegetation */
+  --bm-sage: #9eb3a5; /* silhouettes and secondary marks on dark */
+  --bm-sand: #f6f3ea; /* cream cards, the surface scene */
+  --bm-shallow: #cfe6e2; /* surface water (light scenes) */
+  --bm-signal: #d7e26a; /* calls, spectrogram peaks, "identified" */
+  --bm-alert: #c8452f; /* Endangered badge and rejected look-alikes only */
+  --bm-cr: #2e93b8; /* Costa Rica on the dark stage */
+  --bm-pa: #c4832a; /* Panama on the dark stage */
+  --bm-cr-light: #1f7fa3; /* Costa Rica on light surfaces */
+  --bm-pa-light: #b3741a; /* Panama on light surfaces */
+  --bm-on-deep: #e9f3f4; /* primary text on the dark stage */
+  --bm-on-deep-2: #a9c3c8; /* secondary text on the dark stage */
+}

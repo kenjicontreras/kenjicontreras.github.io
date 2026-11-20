@@ -1,0 +1,50 @@
+{
+ "status": "illustrative: two invented respondents; entropy computed exactly (log base 2, No sabe/No responde excluded)",
+ "institutions": [
+  "la Asamblea",
+  "los partidos",
+  "la policía",
+  "los tribunales",
+  "los medios",
+  "el gobierno",
+  "los municipios"
+ ],
+ "scale": [
+  "Ninguna",
+  "Poca",
+  "Algo",
+  "Bastante",
+  "Mucha"
+ ],
+ "max": 2.32,
+ "respondents": [
+  {
+   "name": "A",
+   "answers": [
+    2,
+    4,
+    3,
+    5,
+    1,
+    3,
+    4
+   ],
+   "bits": 2.24,
+   "straight": false
+  },
+  {
+   "name": "B",
+   "answers": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+   ],
+   "bits": 0,
+   "straight": true
+  }
+ ]
+}

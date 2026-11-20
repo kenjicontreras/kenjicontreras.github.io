@@ -1,0 +1,39 @@
+---
+// Preview page for the drone-manatees scroll story. It is a review
+// surface; on the landing page the story is one of the project tabs.
+// Add ?step=1 … ?step=8 to jump to a step.
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import ScrollStory from '../../../animations/_shared/ScrollStory.astro';
+import Stage from '../../../animations/drone-manatees/Stage.astro';
+import { content } from '../../../animations/drone-manatees/content';
+---
+
+<Base title="Preview: drone manatees story" description="Review page for the drone manatees scroll animation.">
+  <Header />
+  <main id="main" class="preview">
+    <div class="wrap note">
+      <p><strong>Preview.</strong> Scroll to play the story. The same story runs as a tab on the landing page.</p>
+    </div>
+    <ScrollStory content={content} scene="dronemanatees">
+      <Stage slot="stage" />
+    </ScrollStory>
+    <div class="wrap after"><p>End of the story. On the landing page the next project is one tab over.</p></div>
+  </main>
+</Base>
+
+<style>
+  .preview {
+    padding-top: var(--header-h);
+  }
+  .note {
+    padding-block: 0.75rem 0;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+  .after {
+    padding-block: 3rem 40vh;
+    color: var(--slate);
+    border-top: 1px solid var(--rule);
+  }
+</style>

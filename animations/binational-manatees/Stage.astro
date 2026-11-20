@@ -1,0 +1,600 @@
+---
+// The stage for the binational-manatees story: one SVG (viewBox 800 × 600)
+// holding a layer per storyboard step.
+// Everything is drawn here at build time; scene.ts only moves and fades it.
+// Layers are addressed with data-l="name" (see storyboard.md).
+import type { ImageMetadata } from 'astro';
+import './tokens.css';
+import map from './data/map.json';
+import range from './data/range.json';
+import stationData from './data/stations.json';
+import clusterData from './data/clusters.json';
+import crossingData from './data/crossings.json';
+import specData from './data/spectrograms.json';
+
+// ── helpers ───────────────────────────────────────────────────────────────
+let seed = 1661294; // deterministic, so builds are stable
+const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const r1 = (v: number) => Math.round(v * 10) / 10;
+type P = [number, number];
+
+// Inline the SVG assets as <symbol>s so they can be recoloured with `color`.
+const raw = import.meta.glob<string>('./assets/svg/*.svg', { eager: true, query: '?raw', import: 'default' });
+const symbol = (name: string) => {
+  const m = raw[`./assets/svg/${name}.svg`].match(/<svg([^>]*)>([\s\S]*)<\/svg>/)!;
+  const viewBox = m[1].match(/viewBox="([^"]*)"/)![1];
+  const attrs = m[1].replace(/\s(xmlns|viewBox)="[^"]*"/g, '');
+  return `<symbol id="bm-${name}" viewBox="${viewBox}"><g${attrs}>${m[2]}</g></symbol>`;
+};
+const symbols = [
+  'manatee-pair-detailed', 'manatee-side', 'mangrove', 'seagrass', 'hydrophone',
+  'icon-weight', 'icon-net', 'icon-wetland', 'icon-pollution', 'icon-boat',
+  'icon-audio-review', 'icon-neural', 'icon-fingerprint', 'icon-waveform', 'icon-clock', 'icon-target',
+  'icon-rain', 'icon-thermo', 'icon-flood', 'icon-phone', 'icon-no-feed', 'icon-protected',
+].map(symbol).join('');
+
+// ── step 2: threats, as in the lab's summary ──────────────────────────────
+const threats = [
+  { icon: 'icon-net', label: 'Fishing nets' },
+  { icon: 'icon-wetland', label: 'Wetland loss' },
+  { icon: 'icon-pollution', label: 'Water pollution' },
+  { icon: 'icon-boat', label: 'Boat collisions' },
+];
+
+// ── step 3: four manatees, each above two of its own calls ────────────────
+// Each column is one animal: a manatee, the sound it makes, two spectrograms.
+const specFiles = import.meta.glob<{ default: ImageMetadata }>('./assets/img/spec-*.webp', { eager: true });
+const individuals = [...new Set(specData.items.map((s) => s.individual))];
+const colX = (k: number) => 40 + k * 190;
+const cards = specData.items.map((s) => {
+  const col = individuals.indexOf(s.individual);
+  const row = specData.items.filter((o) => o.individual === s.individual).indexOf(s);
+  return { ...s, col, row, src: specFiles[`./assets/img/${s.file}`].default.src, x: colX(col), y: 132 + row * 202 };
+});
+// slightly different sizes, so they read as four animals rather than one icon repeated
+const callers = individuals.map((_, k) => {
+  const w = [124, 104, 132, 112][k % 4];
+  const h = r1((w * 110) / 240);
+  const cx = colX(k) + 75;
+  return { k, w, h, x: r1(cx - w / 2), y: r1(76 - h / 2), cx, cy: 76 };
+});
+
+// ── step 4: calls as dots. The eight shown calls start on their cards and land
+// in their animal's group (clusters 0 to 3); the other calls join from all over.
+const box = { x: 90, y: 70, w: 620, h: 400 };
+const taken3: Record<number, number> = {};
+const dots = clusterData.points.map((p) => {
+  const to = [r1(box.x + p.x * box.w), r1(box.y + p.y * box.h)] as P;
+  const scatter = [r1(box.x + rand() * box.w), r1(box.y + rand() * box.h)] as P;
+  const n = (taken3[p.cluster] = (taken3[p.cluster] ?? -1) + 1);
+  const card = cards.find((c) => c.col === p.cluster && c.row === n);
+  return { cluster: p.cluster, known: !!card, from: card ? ([card.x + 75, card.y + 100] as P) : scatter, scatter, to };
+});
+// one ring per cluster, centred on its calls and just large enough to hold them
+const rings = clusterData.clusters.map((_, id) => {
+  const pts = dots.filter((d) => d.cluster === id).map((d) => d.to);
+  const cx = pts.reduce((a, p) => a + p[0], 0) / pts.length;
+  const cy = pts.reduce((a, p) => a + p[1], 0) / pts.length;
+  return { id, x: r1(cx), y: r1(cy), r: r1(Math.max(...pts.map((p) => Math.hypot(p[0] - cx, p[1] - cy))) + 13) };
+});
+// where each column's manatee flies to: the middle of its own group
+const flights = callers.map((c) => {
+  const ring = rings[c.k];
+  return { dx: r1(ring.x - c.cx), dy: r1(ring.y - c.cy), s: r1((62 / c.w) * 100) / 100 };
+});
+
+// ── step 4: the method, as five numbered stages and three results ─────────
+const pipeline = [
+  { icon: 'manatee', label: 'A manatee calls' },
+  { icon: 'hydrophone', label: 'Hydrophones record' },
+  { icon: 'icon-audio-review', label: 'Audio is reviewed' },
+  { icon: 'icon-neural', label: 'Neural network' },
+  { icon: 'icon-fingerprint', label: 'Manatee identified' },
+].map((p, i) => ({ ...p, y: 78 + i * 111 }));
+const results = [
+  { icon: 'icon-waveform', id: 'files', text: '0', label: 'audio files analysed' },
+  { icon: 'icon-clock', id: 'hours', text: '> 0', label: 'hours of recording' },
+  { icon: 'icon-target', id: 'accuracy', text: '0%', label: 'identification accuracy' },
+].map((r, i) => ({ ...r, y: 44 + i * 182 }));
+
+// ── steps 5 to 7: the coast of Costa Rica and Panama ──────────────────────
+const coast = map.coast.points as P[];
+// smoothed coast and its seaward normals (the Caribbean is to the upper right)
+const smooth = coast.map((_, i) => {
+  const s = coast.slice(Math.max(0, i - 5), i + 6);
+  return [s.reduce((a, p) => a + p[0], 0) / s.length, s.reduce((a, p) => a + p[1], 0) / s.length] as P;
+});
+const normals = smooth.map((_, i) => {
+  const a = smooth[Math.max(0, i - 3)];
+  const b = smooth[Math.min(smooth.length - 1, i + 3)];
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+  let n: P = [(b[1] - a[1]) / len, -(b[0] - a[0]) / len];
+  if (n[0] * 0.7 - n[1] * 0.7 < 0) n = [-n[0], -n[1]];
+  return n;
+});
+const nearest = (p: P) => smooth.reduce((best, q, i) => (Math.hypot(q[0] - p[0], q[1] - p[1]) < Math.hypot(smooth[best][0] - p[0], smooth[best][1] - p[1]) ? i : best), 0);
+const offshore = (i: number, d: number): P => [smooth[i][0] + normals[i][0] * d, smooth[i][1] + normals[i][1] * d];
+
+const stations = stationData.stations;
+const centre = (systems: string[]): P => {
+  const s = stations.filter((st) => systems.includes(st.system));
+  return [s.reduce((a, st) => a + st.x, 0) / s.length, s.reduce((a, st) => a + st.y, 0) / s.length];
+};
+// Individuals drawn as a disc of dots just offshore of each station group.
+// 61 in Panama and 49 in Costa Rica are from the paper; how the 49 split
+// between the three Costa Rican groups is illustrative.
+const groups = [
+  { id: 'pa', country: 'PA', n: 61, at: centre(['Changuinola', 'San San']) },
+  { id: 'barra', country: 'CR', n: 30, at: centre(['Barra del Colorado']) },
+  { id: 'tortuguero', country: 'CR', n: 12, at: centre(['Tortuguero']) },
+  { id: 'pacuare', country: 'CR', n: 7, at: centre(['Pacuare']) },
+].map((g) => {
+  const R = 6.4 * Math.sqrt(g.n);
+  const i = nearest(g.at);
+  const c = offshore(i, R + 16);
+  const pts = Array.from({ length: g.n }, (_, k) => {
+    const rad = 6.4 * Math.sqrt(k + 0.5);
+    const ang = k * 2.39996;
+    return [r1(c[0] + rad * Math.cos(ang)), r1(c[1] + rad * Math.sin(ang))] as P;
+  });
+  return { ...g, R, coastIndex: i, c, pts };
+});
+const group = (id: string) => groups.find((g) => g.id === id)!;
+
+// The nine border-crossers, in the order they first appeared in Costa Rica.
+const spline = (pts: P[]) => {
+  let d = `M${r1(pts[0][0])},${r1(pts[0][1])}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)];
+    d += ` C${r1(p1[0] + (p2[0] - p0[0]) / 6)},${r1(p1[1] + (p2[1] - p0[1]) / 6)} ${r1(p2[0] - (p3[0] - p1[0]) / 6)},${r1(p2[1] - (p3[1] - p1[1]) / 6)} ${r1(p2[0])},${r1(p2[1])}`;
+  }
+  return d;
+};
+const taken: Record<string, number> = {};
+const crossers = [...crossingData.individuals]
+  .sort((a, b) => a.costaRica.first.localeCompare(b.costaRica.first))
+  .map((ind, j) => {
+    // `entry` follows the paper's text; within Tortuguero–Pacuare, stations
+    // S8 and S9 are the Pacuare group.
+    const st = ind.costaRica.stations.map((s) => Number(s.replace(/\D/g, '')));
+    const destId = ind.entry.startsWith('Barra') ? 'barra' : st.every((s) => s >= 8) ? 'pacuare' : 'tortuguero';
+    const dest = group(destId);
+    const pa = group('pa');
+    const k = (taken[destId] = (taken[destId] ?? -1) + 1);
+    const fromIndex = 4 + j * 6; // spread through the Panama disc
+    const toIndex = Math.min(dest.n - 1, 1 + k * 4);
+    const lane = 74 + j * 5; // each animal gets its own lane offshore
+    const mid: P[] = [];
+    for (let i = pa.coastIndex - 4; i > dest.coastIndex + 3; i -= 5) mid.push(offshore(i, lane));
+    return { id: ind.id, destId, fromIndex, toIndex, d: spline([pa.pts[fromIndex], ...mid, dest.pts[toIndex]]) };
+  });
+
+// Corridor: the coast from the Nicaragua–Costa Rica border to the frame edge.
+const borderPts = (map.borders.find((b) => b.id === 'NI-CR')?.d.match(/-?\d+(\.\d+)?/g) ?? []).map(Number);
+let corridorStart = 0;
+let bestD = Infinity;
+for (let i = 0; i < borderPts.length; i += 2) {
+  const k = nearest([borderPts[i], borderPts[i + 1]]);
+  const d = Math.hypot(smooth[k][0] - borderPts[i], smooth[k][1] - borderPts[i + 1]);
+  if (d < bestD) (bestD = d), (corridorStart = k);
+}
+const corridor = 'M' + coast.slice(corridorStart).map((p) => `${p[0]},${p[1]}`).join(' L');
+
+const pa = group('pa');
+const barra = group('barra');
+const L = map.labels as Record<string, P>;
+const RL = range.labels as Record<string, P>;
+
+// ── step 6: conditions during crossings ───────────────────────────────────
+const weather = [
+  { icon: 'icon-rain', label: 'More rain', sub: '12.3 mm vs 8.3 mm' },
+  { icon: 'icon-thermo', label: 'Warmer air', sub: '+0.97 °C vs +0.80 °C' },
+  { icon: 'icon-flood', label: 'Seasonal floods', sub: 'open new routes' },
+].map((w, i) => ({ ...w, y: 44 + i * 86 }));
+
+// ── step 8: what people can do ────────────────────────────────────────────
+const actions = [
+  { icon: 'icon-boat', label: 'Boat slowly' },
+  { icon: 'icon-no-feed', label: 'Don’t feed them' },
+  { icon: 'icon-phone', label: 'Report sightings' },
+  { icon: 'icon-protected', label: 'Protect their homes' },
+].map((a, i) => ({ ...a, x: 40 + (i % 2) * 368, y: 40 + Math.floor(i / 2) * 112 }));
+
+// ── step 9: why it matters. In murky water the manatee is heard, not seen, and
+// the same voice is recorded in both countries. One station per country, each
+// with a card holding the voice print (a hill-shaped call contour, the same in both).
+const whyCardY = 196;
+const whyStations = [
+  { id: 'cr', label: 'COSTA RICA', x: 40 },
+  { id: 'pa', label: 'PANAMA', x: 610 },
+].map((s) => {
+  const x = s.x;
+  const y = whyCardY;
+  return {
+    ...s,
+    cx: x + 75,
+    voice: `M${x + 18},${y + 66} C${x + 44},${y + 64} ${x + 54},${y + 20} ${x + 75},${y + 20} S${x + 106},${y + 64} ${x + 132},${y + 66}`,
+  };
+});
+---
+
+<div class="bm">
+  <div class="bm-canvas">
+    <svg viewBox="0 0 800 600" role="presentation" focusable="false">
+      <defs>
+        <Fragment set:html={symbols} />
+        <linearGradient id="bm-shallows" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#cfe6e2"></stop>
+          <stop offset="0.5" stop-color="#8fc3bd"></stop>
+          <stop offset="1" stop-color="#5a9c98"></stop>
+        </linearGradient>
+        <clipPath id="bm-water-clip">
+          <rect y="172" width="800" height="428"></rect>
+        </clipPath>
+        {cards.map((c, i) => (
+          <clipPath id={`bm-wipe-${i}`}>
+            <rect data-l="wipe" x={c.x} y={c.y} width="150" height="190" rx="6"></rect>
+          </clipPath>
+        ))}
+      </defs>
+
+      <!-- 1 and 8 · the wetland scene: mother and calf under the mangroves -->
+      <g data-l="surface">
+        <rect width="800" height="600" fill="var(--bm-sand)"></rect>
+        <rect y="170" width="800" height="430" fill="url(#bm-shallows)"></rect>
+        <path d="M0,170 Q50,163 100,170 T200,170 T300,170 T400,170 T500,170 T600,170 T700,170 T800,170" fill="none" stroke="#fff" stroke-width="3" opacity="0.85"></path>
+        <g style="color: var(--bm-moss)">
+          <use href="#bm-mangrove" x="-12" y="-18" width="236" height="300"></use>
+          <use href="#bm-mangrove" x="-12" y="-18" width="236" height="300" transform="translate(800,0) scale(-1,1)"></use>
+        </g>
+        <g style="color: #2f6b62" opacity="0.55">
+          <use href="#bm-seagrass" x="0" y="512" width="800" height="90"></use>
+        </g>
+        <g data-l="manatee">
+          <use href="#bm-manatee-pair-detailed" x="240" y="268" width="320" height="160"></use>
+        </g>
+      </g>
+      <g data-l="s1">
+        <text data-l="s1-item" class="off lab ink sci" x="400" y="118" text-anchor="middle">Trichechus manatus manatus</text>
+        <g data-l="s1-item" class="off">
+          <path d="M262,252 H548 M262,243 V261 M548,243 V261" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"></path>
+          <text x="405" y="236" text-anchor="middle" class="num ink" font-size="30">3 to 4 m</text>
+        </g>
+        <g data-l="s1-item" class="off" style="color: var(--ink)">
+          <use href="#bm-icon-weight" x="56" y="436" width="54" height="54"></use>
+          <text x="122" y="462" class="num ink" font-size="30">up to 600 kg</text>
+          <text x="122" y="490" class="lab ink">ecosystem engineer</text>
+        </g>
+      </g>
+
+      <!-- 2 · where they live, and what threatens them -->
+      <g data-l="range" class="off">
+        <rect width="800" height="600" fill="#d9ece8"></rect>
+        <path d={range.land} fill="var(--bm-sand)" stroke="var(--bm-sage)" stroke-width="0.7"></path>
+        {range.range.map((r) => (
+          <path data-l={r.id === 'mainland' ? 'range-line' : 'range-island'} class={r.id === 'mainland' ? '' : 'off'} d={r.d} fill="none" stroke="var(--teal)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
+        ))}
+        <text data-l="range-label" class="off lab caps slate" x={RL.mexico[0] + 6} y={RL.mexico[1] + 18} text-anchor="middle">MEXICO</text>
+        <text data-l="range-label" class="off lab caps slate" x={RL.brazil[0]} y={RL.brazil[1] + 8} text-anchor="middle">BRAZIL</text>
+        <text data-l="range-label" class="off lab slate sea" x={RL.antilles[0]} y={RL.antilles[1]} text-anchor="middle">Antilles</text>
+        <g data-l="study-box" class="off">
+          <rect x={range.studyArea.x - 3} y={range.studyArea.y - 3} width={range.studyArea.width + 6} height={range.studyArea.height + 6} fill="none" stroke="var(--ink)" stroke-width="2.5" rx="3"></rect>
+          <text x={range.studyArea.x - 12} y={range.studyArea.y + range.studyArea.height + 40} text-anchor="end" class="lab ink">our study area</text>
+        </g>
+        <g data-l="endangered" class="off">
+          <rect x="40" y="318" width="196" height="38" rx="19" fill="var(--bm-alert)"></rect>
+          <text x="138" y="345" text-anchor="middle" class="lab caps" fill="#fff">ENDANGERED</text>
+          <text x="38" y="414" class="num ink" font-size="62">&lt; 2,500</text>
+          <text x="40" y="446" class="lab ink">mature adults left</text>
+        </g>
+        <rect y="470" width="800" height="130" fill="var(--bm-sand)"></rect>
+        <path d="M0,470 H800" stroke="var(--rule)" stroke-width="1.5"></path>
+        {threats.map((t, i) => (
+          <g data-l="threat" class="off" style="color: var(--bm-alert)">
+            <use href={`#bm-${t.icon}`} x={100 + i * 200 - 28} y="484" width="56" height="56"></use>
+            <text x={100 + i * 200} y="576" text-anchor="middle" class="lab ink">{t.label}</text>
+          </g>
+        ))}
+      </g>
+
+      <rect data-l="deep" class="off" width="800" height="600" fill="var(--bm-deep)"></rect>
+
+      <!-- 3 · four manatees, each above two of its calls (no text: the drawing says it) -->
+      <g data-l="specs">
+        {individuals.map((_, k) => (
+          <rect data-l="column" class="off" x={colX(k) - 10} y="22" width="170" height="522" rx="10" fill="var(--bm-water)"></rect>
+        ))}
+        {callers.map((c) => (
+          <g data-l="call-arcs" class="off" fill="none" stroke="var(--bm-signal)" stroke-width="2.5" stroke-linecap="round">
+            {[0, 1, 2].map((j) => (
+              <path d={`M${c.cx - 14 - j * 9},${c.y + c.h + 6 + j * 9} Q${c.cx},${c.y + c.h + 16 + j * 12} ${c.cx + 14 + j * 9},${c.y + c.h + 6 + j * 9}`} opacity={1 - j * 0.28}></path>
+            ))}
+          </g>
+        ))}
+        {cards.map((c, i) => (
+          <g data-l="card" class="off">
+            <rect x={c.x} y={c.y} width="150" height="190" rx="6" fill="var(--bm-deep)"></rect>
+            <image href={c.src} x={c.x} y={c.y} width="150" height="190" preserveAspectRatio="none" clip-path={`url(#bm-wipe-${i})`}></image>
+          </g>
+        ))}
+        <text data-l="spec-note" class="off lab soft small" x="400" y="582" text-anchor="middle">each column: one manatee and two of its calls</text>
+      </g>
+      <!-- 4 · every call becomes a dot; dots that sound alike group; each group is one manatee -->
+      <g data-l="cloud">
+        {rings.map((r) => <circle data-l="ring" class="off" cx={r.x} cy={r.y} r={r.r} fill="none" stroke="var(--bm-signal)" stroke-width="1.5" opacity="0.7"></circle>)}
+        {dots.map((d) => (
+          <circle data-l="dot" class="off" data-known={d.known ? '1' : undefined} data-cluster={d.cluster} data-a={d.from.join(',')} data-b={d.scatter.join(',')} data-c={d.to.join(',')} r={d.known ? 7 : 5.5} fill={d.known ? 'var(--bm-signal)' : 'var(--bm-sage)'}></circle>
+        ))}
+        {callers.map((c) => (
+          <g data-l="caller" class="off" data-fly={`${flights[c.k].dx},${flights[c.k].dy},${flights[c.k].s},${c.cx},${c.cy}`} style="color: var(--bm-on-deep)">
+            <use href="#bm-manatee-side" x={c.x} y={c.y} width={c.w} height={c.h}></use>
+          </g>
+        ))}
+        <g data-l="cloud-key" class="off">
+          <circle cx="206" cy="554" r="5.5" fill="var(--bm-signal)"></circle>
+          <text x="220" y="562" class="lab soft small">one call</text>
+          <circle cx="358" cy="554" r="13" fill="none" stroke="var(--bm-signal)" stroke-width="1.5"></circle>
+          <text x="382" y="562" class="lab soft small">one manatee: calls that sound alike</text>
+        </g>
+        {rings.filter((r) => r.id >= callers.length).map((r) => (
+          <g data-l="who" class="off" style="color: var(--bm-on-deep)">
+            <use href="#bm-manatee-side" x={r.x - 31} y={r.y - 14} width="62" height="28.4"></use>
+          </g>
+        ))}
+      </g>
+
+      <!-- 4 · the method in five stages, with its three headline numbers -->
+      <g data-l="pipe">
+        <path data-l="pipe-line" class="off" d={`M60,${pipeline[0].y} V${pipeline[4].y}`} stroke="var(--bm-water-2)" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round"></path>
+        {pipeline.map((p, i) => (
+          <g data-l="pipe-row" class="off">
+            <circle cx="60" cy={p.y} r="19" fill="var(--bm-deep)" stroke="var(--bm-sage)" stroke-width="1.5"></circle>
+            <text x="60" y={p.y + 8} text-anchor="middle" class="num" font-size="22">{i + 1}</text>
+            {p.icon === 'manatee' ? (
+              <g style="color: var(--bm-sage)">
+                <use href="#bm-manatee-side" x="112" y={p.y - 15} width="66" height="30"></use>
+                <path d={`M106,${p.y - 7} q-6,8 0,16 M98,${p.y - 12} q-10,13 0,26`} fill="none" stroke="var(--bm-signal)" stroke-width="2.2" stroke-linecap="round"></path>
+              </g>
+            ) : p.icon === 'hydrophone' ? (
+              <g style="color: var(--bm-sage)">
+                <use href="#bm-hydrophone" x="128" y={p.y - 32} width="32" height="64"></use>
+              </g>
+            ) : (
+              <g style={`color: var(--bm-${i === 4 ? 'signal' : 'sage'})`}>
+                <use href={`#bm-${p.icon}`} x="118" y={p.y - 26} width="52" height="52"></use>
+              </g>
+            )}
+            <text x="196" y={p.y + 8} class="lab">{p.label}</text>
+          </g>
+        ))}
+        {results.map((r) => (
+          <g data-l="result" class="off">
+            <g style="color: var(--bm-signal)">
+              <use href={`#bm-${r.icon}`} x="478" y={r.y} width="42" height="42"></use>
+            </g>
+            <text data-l={`n-${r.id}`} x="476" y={r.y + 98} class="num" font-size="50">{r.text}</text>
+            <text x="478" y={r.y + 130} class="lab soft">{r.label}</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 5 to 7 · the coast of Costa Rica and Panama -->
+      <g data-l="map" class="off">
+        <rect data-l="light" class="off" width="800" height="600" fill="#d9ece8"></rect>
+        <path data-l="land" d={map.land} fill="var(--bm-water)"></path>
+        {map.rivers.map((r) => <path data-l="river" d={r.d} fill="none" stroke="var(--bm-water-2)" stroke-width="1.6" stroke-linecap="round"></path>)}
+        {map.borders.map((b) => <path data-l="border" d={b.d} fill="none" stroke="var(--bm-sage)" stroke-width="1.2" stroke-dasharray="3 5" opacity="0.6"></path>)}
+        <path data-l="coastline" d={map.coast.d} fill="none" stroke="var(--bm-sage)" stroke-width="1" opacity="0.45"></path>
+        <text data-l="maplabel" x={L.CR[0]} y={L.CR[1]} text-anchor="middle" class="lab caps soft">COSTA RICA</text>
+        <text data-l="maplabel" x={L.PA[0]} y={L.PA[1]} text-anchor="middle" class="lab caps soft">PANAMA</text>
+        <path data-l="corridor" class="off" d={corridor} fill="none" stroke="var(--bm-moss)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"></path>
+        {stations.map((s) => (
+          <g data-l="station" class="off" transform={`translate(${s.x},${s.y})`}>
+            <circle class="pulse" r="11" fill="none" stroke="var(--bm-on-deep)" stroke-width="1.2"></circle>
+            <circle r="4.2" fill="var(--bm-on-deep)"></circle>
+          </g>
+        ))}
+        <g data-l="cap5" class="off">
+          <circle cx="56" cy="556" r="5" fill="var(--bm-on-deep)"></circle>
+          <text x="72" y="564" class="lab">Hydrophone</text>
+        </g>
+      </g>
+      <g data-l="people">
+        {crossers.map((c) => <path data-l="track" class="off" d={c.d} fill="none" stroke="var(--bm-signal)" stroke-width="1.6" stroke-linecap="round" opacity="0.75"></path>)}
+        {groups.map((g) =>
+          g.pts.map((p, k) => (
+            <circle
+              data-l="pop"
+              data-country={g.country}
+              data-origin={g.id === 'pa' ? crossers.findIndex((c) => c.fromIndex === k) : -1}
+              data-dest={crossers.findIndex((c) => c.destId === g.id && c.toIndex === k)}
+              class="off"
+              cx={p[0]}
+              cy={p[1]}
+              r="3.6"
+              fill={g.country === 'PA' ? 'var(--bm-pa)' : 'var(--bm-cr)'}
+            ></circle>
+          )),
+        )}
+        {crossers.map(() => <circle data-l="swimmer" class="off" r="6" fill="var(--bm-signal)" stroke="var(--bm-deep)" stroke-width="1.5"></circle>)}
+        <g data-l="lab61" class="off">
+          <text x={r1(pa.c[0] + pa.R + 16)} y={r1(pa.c[1] + 4)} class="num" font-size="46">61</text>
+          <text x={r1(pa.c[0] + pa.R + 18)} y={r1(pa.c[1] + 32)} class="lab soft">in Panama</text>
+        </g>
+        <g data-l="lab49" class="off">
+          <text x={r1(barra.c[0] + barra.R + 50)} y={r1(barra.c[1] - 2)} class="num" font-size="46">49</text>
+          <text x={r1(barra.c[0] + barra.R + 52)} y={r1(barra.c[1] + 26)} class="lab soft">in Costa Rica</text>
+        </g>
+        <g data-l="pop-key" class="off">
+          <circle cx="46" cy="554" r="4.5" fill="var(--bm-pa)"></circle>
+          <circle cx="60" cy="554" r="4.5" fill="var(--bm-cr)"></circle>
+          <text x="74" y="562" class="lab soft small">one manatee</text>
+        </g>
+        <g data-l="cross-key" class="off">
+          <circle cx="232" cy="554" r="6" fill="var(--bm-signal)"></circle>
+          <text x="246" y="562" class="lab soft small">heard in both countries</text>
+        </g>
+        <g data-l="lab9" class="off">
+          <text x="752" y="232" text-anchor="end" class="num sig" font-size="96">9</text>
+          <text x="752" y="266" text-anchor="end" class="lab">crossed the border</text>
+        </g>
+      </g>
+
+      <!-- 6 · conditions during crossings -->
+      <g data-l="weather">
+        {weather.map((w) => (
+          <g data-l="weather-item" class="off">
+            <g style="color: var(--bm-signal)">
+              <use href={`#bm-${w.icon}`} x="476" y={w.y} width="56" height="56"></use>
+            </g>
+            <text x="548" y={w.y + 24} class="lab strong">{w.label}</text>
+            <text x="548" y={w.y + 52} class="lab soft small">{w.sub}</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 7 · the proposed corridor -->
+      <g data-l="lab984" class="off">
+        <text x="752" y="210" text-anchor="end" class="num ink" font-size="76">984 km</text>
+        <text x="752" y="246" text-anchor="end" class="lab ink">proposed protected corridor</text>
+      </g>
+
+      <!-- 8 · what people can do (over the wetland scene) -->
+      <g data-l="actions">
+        {actions.map((a) => (
+          <g data-l="action" class="off">
+            <rect x={a.x} y={a.y} width="352" height="96" rx="8" fill="#fff" stroke="var(--rule)" stroke-width="1.5" opacity="0.94"></rect>
+            <g style="color: var(--teal-deep)">
+              <use href={`#bm-${a.icon}`} x={a.x + 20} y={a.y + 20} width="56" height="56"></use>
+            </g>
+            <text x={a.x + 92} y={a.y + 57} class="lab ink strong">{a.label}</text>
+          </g>
+        ))}
+      </g>
+
+      <!-- 9 · why it matters: heard, not seen; the same voice recorded in both countries -->
+      <g data-l="why">
+        <rect data-l="murk" class="off" y="172" width="800" height="428" fill="#163a40"></rect>
+        <g clip-path="url(#bm-water-clip)">
+          {[0, 1].map(() => (
+            <circle data-l="why-wave" class="off" cx="400" cy="348" r="24" fill="none" stroke="var(--bm-signal)" stroke-width="3"></circle>
+          ))}
+        </g>
+        {whyStations.map((s) => (
+          <g data-l="why-station" class="off">
+            <circle class="pulse" cx={s.cx} cy="472" r="18" fill="none" stroke={`var(--bm-${s.id})`} stroke-width="2.5"></circle>
+            <g style="color: var(--bm-on-deep-2)">
+              <use href="#bm-hydrophone" x={s.cx - 18} y="440" width="36" height="72"></use>
+            </g>
+            <text x={s.cx} y="334" text-anchor="middle" class="lab caps soft">{s.label}</text>
+          </g>
+        ))}
+        {whyStations.map((s) => (
+          <g data-l="why-card" class="off">
+            <rect x={s.x} y={whyCardY} width="150" height="88" rx="6" fill="var(--bm-deep)" stroke={`var(--bm-${s.id})`} stroke-width="2"></rect>
+            <path d={`M${s.x + 14},${whyCardY + 74} H${s.x + 136}`} stroke="var(--bm-water-2)" stroke-width="1.5"></path>
+            <path data-l="why-voice" d={s.voice} fill="none" stroke="var(--bm-signal)" stroke-width="3.5" stroke-linecap="round"></path>
+          </g>
+        ))}
+        <g data-l="why-link" class="off">
+          <path d="M196,240 H604" stroke="var(--bm-signal)" stroke-width="2" stroke-dasharray="4 8" stroke-linecap="round"></path>
+          <rect x="318" y="218" width="164" height="44" rx="22" fill="var(--bm-deep)" stroke="var(--bm-signal)" stroke-width="1.5"></rect>
+          <text x="400" y="248" text-anchor="middle" class="lab">same voice</text>
+        </g>
+      </g>
+    </svg>
+  </div>
+</div>
+
+<style>
+  .bm {
+    /* never taller than the space under the site header */
+    width: min(100%, calc((100svh - var(--header-h) - 3rem) * 4 / 3));
+    min-width: min(100%, 300px);
+    margin-inline: auto;
+  }
+  .bm-canvas {
+    position: relative; /* the WebGL light layer (gl.ts) is laid over the SVG */
+    aspect-ratio: 4 / 3;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bm-sand);
+  }
+  /* with the light layer on, it draws the calls; only the eight shown ones stay as SVG dots */
+  .bm[data-gl] [data-l='dot']:not([data-known]) {
+    display: none;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font);
+  }
+  .off {
+    opacity: 0;
+    visibility: hidden;
+  }
+  text {
+    fill: var(--bm-on-deep);
+  }
+  .num {
+    font-weight: 680;
+    font-stretch: 120%;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .lab {
+    font-size: 24px;
+    font-weight: 500;
+  }
+  .small {
+    font-size: 22px;
+  }
+  .strong {
+    font-weight: 650;
+  }
+  .caps {
+    font-size: 22px;
+    font-weight: 650;
+    letter-spacing: 0.12em;
+  }
+  .sci {
+    font-style: italic;
+    font-size: 26px;
+  }
+  .soft {
+    fill: var(--bm-on-deep-2);
+  }
+  .sea {
+    font-style: italic;
+  }
+  .sig {
+    fill: var(--bm-signal);
+  }
+  .ink {
+    fill: var(--ink);
+  }
+  .slate {
+    fill: var(--slate);
+  }
+  .pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bm-pulse 2.4s ease-out infinite;
+  }
+  @keyframes bm-pulse {
+    0% {
+      transform: scale(0.4);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(1.6);
+      opacity: 0;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .bm {
+      width: min(100%, calc((100svh - var(--header-h) - 17rem) * 4 / 3));
+    }
+  }
+</style>

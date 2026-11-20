@@ -1,0 +1,221 @@
+---
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { about, venues, profile } from '../data/profile';
+
+// The portrait is picked up automatically from src/assets/kenji.(jpg|jpeg|png|webp)
+// and optimised at build time. Until it exists, a placeholder frame is shown.
+const found = import.meta.glob<{ default: ImageMetadata }>('../assets/kenji.{jpg,jpeg,png,webp}', { eager: true });
+const photo = Object.values(found)[0]?.default;
+// Optional second portrait, shown beside the first and set lower (staggered).
+const foundTkd = import.meta.glob<{ default: ImageMetadata }>('../assets/kenji-taekwondo.{jpg,jpeg,png,webp}', { eager: true });
+const photoTkd = Object.values(foundTkd)[0]?.default;
+---
+
+<section class="block" id="about" aria-labelledby="about-title">
+  <div class="wrap grid">
+    <figure class:list={['portrait', { pair: photo && photoTkd }]}>
+      {
+        photo ? (
+          <>
+            <Picture
+              src={photo}
+              formats={['avif', 'webp']}
+              widths={[300, 480, 760]}
+              sizes={photoTkd ? '(max-width: 860px) 45vw, 16vw' : '(max-width: 860px) 70vw, 30vw'}
+              alt="Kenji Contreras in a blue Haidong Gumdo uniform, holding a sword"
+            />
+            {photoTkd && (
+              <Picture
+                src={photoTkd}
+                formats={['avif', 'webp']}
+                widths={[300, 480, 760]}
+                sizes="(max-width: 860px) 45vw, 16vw"
+                alt="Kenji Contreras in a white taekwondo uniform with a black belt"
+              />
+            )}
+          </>
+        ) : (
+          <div class="empty">Save your photo as src/assets/kenji.jpg</div>
+        )
+      }
+    </figure>
+
+    <div class="text">
+      <h2 id="about-title" class="sec-title">About me</h2>
+      {about.paragraphs.map((p) => <p>{p}</p>)}
+
+      <div class="facts">
+        <div>
+          <h3>Education</h3>
+          <ul class="plain">
+            {
+              about.education.map((e) => (
+                <li>
+                  <strong>{e.title}</strong>
+                  <span>{e.place}, {e.years}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <h3>Teaching</h3>
+          <ul class="plain">
+            <li>
+              <strong>{about.teaching.title}</strong>
+              <span>{about.teaching.place}, {about.teaching.years}</span>
+            </li>
+          </ul>
+          <h3>Languages</h3>
+          <p class="tk">{about.languages.join('; ')}</p>
+        </div>
+        <div>
+          <h3>Peer-reviewed in</h3>
+          <ul class="venues">{venues.map((v) => <li>{v}</li>)}</ul>
+          <h3>All 13 publications</h3>
+          <p class="profiles">
+            {profile.links.scholar && <a class="rg draw" href={profile.links.scholar} target="_blank" rel="noopener">Google Scholar</a>}
+            {profile.links.researchgate && <a class="rg draw" href={profile.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>}
+          </p>
+          <p class="refs">References available on request.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  #about {
+    padding-block: clamp(4.5rem, 10vw, 8rem);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(2rem, 6vw, 5.5rem);
+    align-items: start;
+  }
+  .portrait {
+    margin: 0;
+    position: sticky;
+    top: calc(var(--header-h) + 1.5rem);
+  }
+  /* Two portraits side by side, the second set lower. */
+  .portrait.pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(0.6rem, 1.2vw, 1rem);
+    align-items: start;
+  }
+  .portrait.pair > :global(picture:nth-child(2)) {
+    margin-top: 18%;
+  }
+  .portrait :global(picture) {
+    display: block;
+  }
+  .portrait :global(img) {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    background: #8c9091;
+  }
+  .empty {
+    aspect-ratio: 756 / 1040;
+    border-radius: 8px;
+    border: 1.5px dashed var(--rule);
+    background: var(--panel);
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+  .text h2 {
+    margin-bottom: 1.75rem;
+  }
+  .text > p {
+    font-family: var(--font-text);
+    font-size: 1.25rem;
+    line-height: 1.6;
+    max-width: 58ch;
+  }
+  .text > p + p {
+    margin-top: 1.1rem;
+  }
+
+  .facts {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 2rem 3rem;
+  }
+  .facts h3 {
+    font-size: var(--step-0);
+    font-stretch: 100%;
+    font-weight: 650;
+    color: var(--teal-deep);
+    margin-bottom: 0.6rem;
+  }
+  .facts h3 + * {
+    margin-bottom: 1.5rem;
+  }
+  .plain {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  .plain li {
+    display: grid;
+    gap: 0.05rem;
+    line-height: 1.4;
+  }
+  .plain strong {
+    font-weight: 650;
+  }
+  .plain span {
+    color: var(--slate);
+    font-size: 0.95rem;
+  }
+  .venues {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1rem;
+    display: grid;
+    gap: 0.2rem;
+  }
+  .profiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+  }
+  .rg {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 600;
+  }
+  .refs {
+    margin-top: 0.5rem;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+  .tk {
+    color: var(--ink);
+  }
+
+  @media (max-width: 860px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      position: static;
+      max-width: 22rem;
+    }
+    .facts {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

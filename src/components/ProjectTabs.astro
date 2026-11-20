@@ -1,0 +1,497 @@
+---
+// The five scroll stories as tabs. Each panel holds one unchanged scroll
+// story (animations/<id>: ScrollStory + Stage + content). Only the selected
+// story is mounted, so one animation and at most one WebGL layer run at once.
+import ScrollStory from '../../animations/_shared/ScrollStory.astro';
+import BinationalStage from '../../animations/binational-manatees/Stage.astro';
+import DroneStage from '../../animations/drone-manatees/Stage.astro';
+import SpectraStage from '../../animations/vector-spectra/Stage.astro';
+import WatermelonStage from '../../animations/watermelon-varieties/Stage.astro';
+import SurveyStage from '../../animations/survey-nlp/Stage.astro';
+import { content as binational } from '../../animations/binational-manatees/content';
+import { content as drone } from '../../animations/drone-manatees/content';
+import { content as spectra } from '../../animations/vector-spectra/content';
+import { content as watermelon } from '../../animations/watermelon-varieties/content';
+import { content as survey } from '../../animations/survey-nlp/content';
+import { projects } from '../data/work';
+
+const stories = {
+  'binational-manatees': { content: binational, Stage: BinationalStage },
+  'drone-manatees': { content: drone, Stage: DroneStage },
+  'vector-spectra': { content: spectra, Stage: SpectraStage },
+  'watermelon-varieties': { content: watermelon, Stage: WatermelonStage },
+  'survey-nlp': { content: survey, Stage: SurveyStage },
+};
+---
+
+<section class="block work" id="work" aria-labelledby="work-title" data-tabs>
+  <div class="wrap block-head">
+    <h2 id="work-title">Projects, step by step</h2>
+    <p>Five projects, from field research to tools for business. Pick one and scroll to see how it works, step by step.</p>
+  </div>
+
+  <div class="bar" data-bar>
+    <div class="wrap">
+      <div class="tablist" role="tablist" aria-label="Projects">
+        {
+          projects.map((p, i) => (
+            <button
+              type="button"
+              class="tab"
+              role="tab"
+              id={`tab-${p.id}`}
+              aria-controls={`panel-${p.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-id={p.id}
+              title={p.tab}
+            >
+              <span class="num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+              <span class="t">{p.tab}</span>
+            </button>
+          ))
+        }
+        <span class="ind" aria-hidden="true" data-ind></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panels">
+    {
+      projects.map((p, i) => {
+        const { content, Stage } = stories[p.id];
+        return (
+          <div class="panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} hidden={i !== 0}>
+            <ScrollStory content={content} scene={p.scene}>
+              <Stage slot="stage" />
+            </ScrollStory>
+          </div>
+        );
+      })
+    }
+  </div>
+
+  <div class="wrap next">
+    <button type="button" class="btn btn-line" data-next>
+      Next project: <span data-next-label>{projects[1].tab}</span>
+      <span class="arrow" aria-hidden="true">→</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { scenes } from '../scenes';
+  import { scrollToEl } from '../scripts/scroll';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const root = document.querySelector<HTMLElement>('[data-tabs]');
+  if (root) {
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const ids = tabs.map((t) => t.dataset.id!);
+    const panels = tabs.map((t) => document.getElementById(t.getAttribute('aria-controls')!)!);
+    const stages = panels.map((p) => p.querySelector<HTMLElement>('[data-scene]')!);
+    // Each stage's markup before any scene touched it, restored on unmount so a
+    // story always starts again from step 1.
+    const pristine = stages.map((s) => s.innerHTML);
+    const bar = root.querySelector<HTMLElement>('[data-bar]')!;
+    const list = root.querySelector<HTMLElement>('[role="tablist"]')!;
+    const ind = root.querySelector<HTMLElement>('[data-ind]')!;
+    const next = root.querySelector<HTMLButtonElement>('[data-next]');
+    const nextLabel = root.querySelector<HTMLElement>('[data-next-label]');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let current = 0;
+    let armed = false; // true once the reader has come near the section
+    let cleanup: (() => void) | null = null;
+    let token = 0;
+
+    const mount = async (i: number) => {
+      const mine = ++token;
+      const stage = stages[i];
+      const section = stage.closest<HTMLElement>('[data-story]');
+      const load = scenes[stage.dataset.scene || ''];
+      if (!load || !section) return;
+      const scene = await load();
+      if (mine !== token) return; // another tab was picked while this one loaded
+      cleanup = scene({ stage, section, gsap, ScrollTrigger });
+      ScrollTrigger.refresh();
+    };
+
+    const unmount = (i: number) => {
+      token++;
+      cleanup?.();
+      cleanup = null;
+      stages[i].innerHTML = pristine[i];
+      stages[i].dataset.step = '1';
+      panels[i].querySelectorAll('.is-active').forEach((el) => el.classList.remove('is-active'));
+    };
+
+    // The pill under the selected tab moves by transform only.
+    let indX = 0;
+    let indW = 0;
+    const placeIndicator = (animate: boolean) => {
+      const t = tabs[current];
+      const x = t.offsetLeft;
+      const w = t.offsetWidth;
+      ind.style.width = `${w}px`;
+      ind.style.top = `${t.offsetTop}px`;
+      ind.style.height = `${t.offsetHeight}px`;
+      if (animate && indW && !reduced) {
+        ind.style.transition = 'none';
+        ind.style.transform = `translateX(${indX}px) scaleX(${indW / w})`;
+        void ind.offsetWidth;
+        ind.style.transition = '';
+      }
+      ind.style.transform = `translateX(${x}px) scaleX(1)`;
+      indX = x;
+      indW = w;
+    };
+
+    // Once pinned, the bar shows its compact one-line height (--bar-h).
+    const barH = () => parseFloat(getComputedStyle(root).getPropertyValue('--bar-h')) || 60;
+    const headerH = () => document.querySelector<HTMLElement>('[data-header]')?.offsetHeight ?? 68;
+    const stickyOffset = () =>
+      headerH() + (getComputedStyle(bar).position === 'sticky' ? barH() : 0);
+
+    // Two-line titles while the bar sits in the page; one line once it pins.
+    // Only the bar's content and clip change, never its box, so nothing shifts.
+    let stuck = false;
+    const checkStuck = () => {
+      const sticky = getComputedStyle(bar).position === 'sticky';
+      const now = sticky && bar.getBoundingClientRect().top <= headerH() + 1;
+      if (now === stuck) return;
+      stuck = now;
+      bar.classList.toggle('is-stuck', now);
+      placeIndicator(true);
+    };
+    window.addEventListener('scroll', checkStuck, { passive: true });
+    window.addEventListener('resize', checkStuck);
+
+    const scrollToStart = (always: boolean, immediate = false) => {
+      const panel = panels[current];
+      const offset = stickyOffset();
+      if (always || panel.getBoundingClientRect().top < offset) scrollToEl(panel, offset, immediate);
+    };
+
+    const select = (i: number, opts: { focus?: boolean; scroll?: 'always' | 'if-inside'; hash?: boolean } = {}) => {
+      if (i !== current) {
+        unmount(current);
+        panels[current].hidden = true;
+        current = i;
+        panels[i].hidden = false;
+        tabs.forEach((t, k) => {
+          t.setAttribute('aria-selected', String(k === i));
+          t.tabIndex = k === i ? 0 : -1;
+        });
+        placeIndicator(true);
+        tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        if (nextLabel) nextLabel.textContent = tabs[(i + 1) % tabs.length].textContent!.replace(/^\s*\d+\s*/, '').trim();
+        ScrollTrigger.refresh();
+        if (armed) mount(i);
+      }
+      if (opts.focus) tabs[i].focus();
+      if (opts.scroll) scrollToStart(opts.scroll === 'always');
+      if (opts.hash) history.replaceState(null, '', `#${ids[i]}`);
+    };
+
+    tabs.forEach((t, i) => t.addEventListener('click', () => select(i, { scroll: 'if-inside', hash: true })));
+
+    list.addEventListener('keydown', (e) => {
+      const keys: Record<string, number> = {
+        ArrowRight: (current + 1) % tabs.length,
+        ArrowLeft: (current - 1 + tabs.length) % tabs.length,
+        Home: 0,
+        End: tabs.length - 1,
+      };
+      if (!(e.key in keys)) return;
+      e.preventDefault();
+      select(keys[e.key], { focus: true, scroll: 'if-inside', hash: true });
+    });
+
+    next?.addEventListener('click', () => select((current + 1) % tabs.length, { scroll: 'always', hash: true }));
+
+    // Links to a story id (from Skills, or shared URLs) open its tab.
+    // Capture phase, so Lenis's own anchor scrolling never sees these clicks
+    // (it would scroll to the story while its panel is still hidden).
+    document.addEventListener(
+      'click',
+      (e) => {
+        const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+        const i = a ? ids.indexOf(a.hash.slice(1)) : -1;
+        if (i < 0) return;
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        select(i, { scroll: 'always', hash: true });
+      },
+      true,
+    );
+    const fromHash = () => {
+      const i = ids.indexOf(location.hash.slice(1));
+      if (i >= 0) select(i, { scroll: 'always' });
+    };
+    window.addEventListener('hashchange', fromHash);
+
+    new ResizeObserver(() => placeIndicator(false)).observe(list);
+    placeIndicator(false);
+    checkStuck();
+
+    // Mount the selected story when the reader comes within half a screen.
+    ScrollTrigger.create({
+      trigger: root,
+      start: 'top bottom+=50%',
+      once: true,
+      onEnter: () => {
+        armed = true;
+        mount(current);
+      },
+    });
+
+    // A shared link to a story: open its tab now, scroll once the page has
+    // settled (fonts and images change the layout, and a refresh would undo
+    // an earlier scroll).
+    const initial = ids.indexOf(location.hash.slice(1));
+    if (initial >= 0) {
+      select(initial);
+      const settle = () =>
+        (document.fonts?.ready ?? Promise.resolve()).then(() =>
+          requestAnimationFrame(() => {
+            ScrollTrigger.refresh();
+            scrollToStart(true, true);
+          }),
+        );
+      if (document.readyState === 'complete') settle();
+      else window.addEventListener('load', settle, { once: true });
+    }
+  }
+</script>
+
+<style>
+  .work {
+    /* the site header's height, kept before .panels raises --header-h */
+    --bar-top: var(--header-h);
+    --bar-h: 60px; /* pinned, one line */
+    --bar-full: 96px; /* in the page, two lines */
+    padding-block: clamp(3rem, 6vw, 4.5rem) clamp(2.5rem, 5vw, 4rem);
+  }
+  /* The heading takes one line with the lede beside it, close above the tabs. */
+  .work .block-head {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: 1.5rem 4rem;
+    align-items: end;
+    margin-bottom: 1.25rem;
+  }
+  .work .block-head p {
+    margin-top: 0;
+  }
+  @media (max-width: 860px) {
+    .work .block-head {
+      grid-template-columns: 1fr;
+    }
+  }
+  /* The story title follows the tab bar closely, and the story's own bottom
+     padding is enough room before the Next button. */
+  .panel :global(.story) {
+    padding-block: clamp(1.5rem, 3vw, 2.25rem) 1.5rem;
+  }
+
+  /* The tab bar sticks under the header while a story plays. */
+  .bar {
+    position: sticky;
+    top: var(--bar-top);
+    z-index: 20;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+  .tablist {
+    position: relative;
+    display: flex;
+    gap: 0.25rem;
+    height: var(--bar-h);
+    align-items: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tab {
+    position: relative;
+    z-index: 1;
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 44px;
+    padding: 0.5rem 0.9rem;
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 240ms, background-color 160ms;
+  }
+  .tab:hover {
+    background: var(--panel);
+  }
+  .tab[aria-selected='true'] {
+    color: var(--paper);
+    background: none;
+  }
+  .num {
+    font-size: 0.78rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--slate);
+    transition: color 240ms;
+  }
+  .tab[aria-selected='true'] .num {
+    color: #9fd8d3;
+  }
+  /* Desktop: five equal columns, number above a title of up to two lines.
+     The bar's box is always --bar-full tall but takes only --bar-h of the
+     flow (negative margin), so pinning never moves the page; when pinned,
+     the lower part is clipped away and the titles drop to one line. */
+  @media (min-width: 901px) {
+    .bar {
+      height: var(--bar-full);
+      margin-bottom: calc(var(--bar-h) - var(--bar-full));
+      border-bottom: 0;
+      clip-path: inset(0 0 0 0);
+      transition: clip-path 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .bar::after {
+      content: '';
+      position: absolute;
+      inset: auto 0 0;
+      height: 1px;
+      background: var(--rule);
+      transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .bar.is-stuck {
+      clip-path: inset(0 0 calc(var(--bar-full) - var(--bar-h) - 1px) 0);
+    }
+    .bar.is-stuck::after {
+      transform: translateY(calc(var(--bar-h) - var(--bar-full) + 1px));
+    }
+    .panel :global(.story) {
+      padding-top: calc(clamp(1.5rem, 3vw, 2.25rem) + var(--bar-full) - var(--bar-h));
+    }
+    .tablist {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      height: var(--bar-full);
+      padding-block: 8px;
+      align-items: start;
+      overflow: visible;
+    }
+    .tab {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0.2rem;
+      height: calc(var(--bar-full) - 16px);
+      min-height: 0;
+      padding: 0.55rem 0.9rem 0.6rem;
+      border-radius: 12px;
+      white-space: normal;
+      text-align: left;
+      line-height: 1.25;
+    }
+    .t {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+    }
+    .bar.is-stuck .tab {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.5rem;
+      height: calc(var(--bar-h) - 16px);
+      padding-block: 0;
+    }
+    .bar.is-stuck .t {
+      min-width: 0;
+      font-size: 0.8rem;
+      line-height: 1.15;
+    }
+    .tablist .ind {
+      border-radius: 12px;
+    }
+  }
+  @media (min-width: 901px) and (max-width: 1180px) {
+    .tab {
+      font-size: 0.92rem;
+      padding-inline: 0.75rem;
+    }
+  }
+  .tablist::-webkit-scrollbar {
+    display: none;
+  }
+  .ind {
+    position: absolute;
+    left: 0;
+    top: 8px;
+    height: 44px;
+    border-radius: 999px;
+    background: var(--navy);
+    transform-origin: left center;
+    transition:
+      transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      top 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      height 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* Stories pin below the tab bar: ScrollStory and story.ts read --header-h. */
+  .panels {
+    --header-h: calc(var(--bar-top) + var(--bar-h) + 1px);
+  }
+
+  .next {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .next .btn {
+    gap: 0.5rem;
+  }
+  .arrow {
+    transition: transform 200ms;
+  }
+  .next .btn:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  /* Phone and narrow tablet: the story pins its stage under the site header,
+     so the tab bar scrolls away with the page. */
+  @media (max-width: 900px) {
+    .bar {
+      position: static;
+    }
+    /* the row scrolls sideways and runs to the screen edge, so a cut tab reads as more */
+    .tablist {
+      margin-inline: calc(-1 * var(--gutter));
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+    }
+    .panels {
+      --header-h: var(--bar-top);
+    }
+    .next {
+      justify-content: stretch;
+    }
+    .next .btn {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ind,
+    .bar,
+    .bar::after {
+      transition: none;
+    }
+  }
+</style>
