@@ -7,6 +7,15 @@ import type { ImageMetadata } from 'astro';
 import './tokens.css';
 import results from './data/results.json';
 import embedding from './data/embedding.json';
+import { translator, type Lang } from '../_shared/labels';
+import { es as labelsEs } from './labels';
+
+interface Props {
+  /** Page language; only the drawn labels change. */
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const tx = translator(lang, labelsEs);
 
 let seed = 9831572; // deterministic, so builds are stable
 const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
@@ -51,22 +60,61 @@ const groups = varieties.map((v) => {
   return { ...v, y, rows, squares };
 });
 
-// ── step 4: a frozen network, a small trained head ────────────────────────
-const layers = Array.from({ length: 6 }, (_, i) => ({ x: 212 + i * 42, h: 196 - i * 22 }));
-const chips = [
-  { name: 'VGG19', x: 190, w: 112, kept: false },
-  { name: 'ResNet50', x: 316, w: 144, kept: false },
-  { name: 'EfficientNetB0', x: 474, w: 212, kept: true },
+// ── step 4: a network that learned to see on everyday photos, then a small trained part ──
+// Three columns of feature detectors, from simple to complex. Each tile is a little drawing of
+// what that detector responds to; `act` is how strongly the rind patch lights it up (illustrative).
+const tileX = [204, 296, 388];
+const tileY = [182, 257, 332];
+const columns = [
+  { label: tx('edges'), act: [0.25, 0.95, 0.25] },
+  { label: tx('textures'), act: [1, 0.65, 0.2] },
+  { label: tx('shapes'), act: [0.95, 0.25, 0.8] },
+];
+// the drawing inside each tile (local coordinates 0 to 56)
+const tileArt = [
+  [
+    '<path d="M10,28 H46"/>',
+    '<path d="M12,44 L44,12"/>',
+    '<path d="M28,10 V46"/>',
+  ],
+  [
+    '<path d="M8,24 L24,8 M8,40 L40,8 M16,48 L48,16 M32,48 L48,32"/>',
+    '<path d="M8,20 q10,-9 20,0 t20,0 M8,36 q10,-9 20,0 t20,0"/>',
+    [14, 28, 42].flatMap((y) => [14, 28, 42].map((x) => `<circle cx="${x}" cy="${y}" r="3.2" stroke="none" fill="currentColor"/>`)).join(''),
+  ],
+  [
+    '<path stroke="none" fill="currentColor" d="M9,19 C15,7 31,11 27,23 C24,32 11,31 9,19Z M30,35 C38,25 50,34 45,44 C40,52 27,45 30,35Z"/>',
+    '<path d="M12,44 A16,16 0 0 1 44,44 M20,44 A8,8 0 0 1 36,44"/>',
+    '<path d="M6,34 L16,22 L26,34 L36,22 L46,34"/>',
+  ],
+];
+const tiles = columns.flatMap((c, i) =>
+  tileY.map((y, j) => ({ x: tileX[i], y, act: c.act[j], art: tileArt[i][j], col: i })),
+);
+// the last column feeds the small trained part; line strength = how much it counts
+const links = tileY.map((y, j) => ({ d: `M444,${y + 28} C484,${y + 28} 484,${262 + j * 23} 520,${262 + j * 23}`, w: columns[2].act[j] }));
+// everyday photos the big network learned from (simple original drawings, 64 × 64 tiles)
+const everyday = [
+  { y: 170, art: '<circle cx="32" cy="32" r="6"/><circle cx="32" cy="19" r="7"/><circle cx="44.4" cy="28" r="7"/><circle cx="39.6" cy="42.6" r="7"/><circle cx="24.4" cy="42.6" r="7"/><circle cx="19.6" cy="28" r="7"/>' },
+  { y: 252, art: '<path d="M10,40 V32 L18,24 H40 L50,32 H54 V40 Z"/><circle cx="20" cy="42" r="6"/><circle cx="44" cy="42" r="6"/>' },
+  { y: 334, art: '<path d="M12,30 L32,14 L52,30 Z M17,30 H47 V50 H17 Z"/>' },
 ];
 
 // ── step 5: the 100 test photos as points ─────────────────────────────────
 const G = embedding.groups as Record<Id, { x: number; y: number; r: number }>;
 const pts = embedding.points as { truth: Id; said: Id; a: number[]; b: number[] }[];
+// a new photo lands among the Anna points and takes the name of its nearest neighbours
+const fresh = { x: 166, y: 178 };
+const near = pts
+  .map((p) => ({ x: p.b[0], y: p.b[1], d: Math.hypot(p.b[0] - fresh.x, p.b[1] - fresh.y), said: p.said, truth: p.truth }))
+  .filter((p) => p.said === 'anna' && p.truth === 'anna')
+  .sort((a, b) => a.d - b.d)
+  .slice(0, 4);
 
 // ── step 6: correct answers per variety, both methods (real counts) ───────
 const panels = [
-  { id: 'transfer', title: 'Method 1: borrowed eye', acc: '84%', x: 40 },
-  { id: 'metric', title: 'Method 2: similarity map', acc: '81%', x: 420 },
+  { id: 'transfer', title: tx('Method 1: borrowed eye'), acc: '84%', x: 40 },
+  { id: 'metric', title: tx('Method 2: similarity map'), acc: '81%', x: 420 },
 ].map((p) => ({
   ...p,
   rows: varieties.map((v, k) => {
@@ -127,89 +175,148 @@ const fruit = [
             <image href={img(`var-${v.id}`)} x={24 + i * 258} y="84" width="236" height="190" preserveAspectRatio="xMidYMid meet"></image>
             <circle cx={24 + i * 258 + 118 - 54} cy="322" r="9" fill={`var(--wv-${v.id}-light)`}></circle>
             <text x={24 + i * 258 + 118 - 36} y="331" class="lab ink strong">{v.name}</text>
-            <text x={24 + i * 258 + 118} y="366" text-anchor="middle" class="lab slate small">{n[v.id]} photos</text>
+            <text x={24 + i * 258 + 118} y="366" text-anchor="middle" class="lab slate small">{n[v.id]} {tx('photos')}</text>
             <image href={img(`patch-${v.id}`)} x={24 + i * 258 + 62} y="404" width="112" height="112" class="pixelated"></image>
             <rect x={24 + i * 258 + 62} y="404" width="112" height="112" fill="none" stroke="var(--ink)" stroke-width="1.5"></rect>
           </g>
         ))}
-        <text data-l="variety-note" class="off lab slate small" x="400" y="560" text-anchor="middle">a patch of rind from each, as the model receives it</text>
+        <text data-l="variety-note" class="off lab slate small" x="400" y="560" text-anchor="middle">{tx('a patch of rind from each, as the model receives it')}</text>
       </g>
 
       <!-- 3 · one square per photo; one photo as the model receives it -->
       <g data-l="count" class="off">
         <rect width="800" height="600" fill="var(--wv-cream)"></rect>
         <text data-l="n-photos" x="40" y="88" class="num ink" font-size="56">0</text>
-        <text x="170" y="88" class="lab slate">photos</text>
+        <text x="170" y="88" class="lab slate">{tx('photos')}</text>
         {groups.map((g) => (
           <g>
             {g.squares.map((s) => <rect data-l="sq" class="off" x={s.x} y={s.y} width="12" height="12" rx="2" fill={s.fill}></rect>)}
             <g data-l="group-label" class="off">
               <circle cx="292" cy={g.y + 14} r="9" fill={`var(--wv-${g.id}-light)`}></circle>
               <text x="310" y={g.y + 23} class="lab ink strong">{g.name}</text>
-              <text x="310" y={g.y + 52} class="lab slate small">{n[g.id]} photos</text>
+              <text x="310" y={g.y + 52} class="lab slate small">{n[g.id]} {tx('photos')}</text>
             </g>
           </g>
         ))}
         <g data-l="sq-key" class="off">
           <rect x="40" y="540" width="12" height="12" rx="2" fill="#3a6a3c"></rect>
-          <text x="62" y="552" class="lab slate small">one photo</text>
+          <text x="62" y="552" class="lab slate small">{tx('one photo')}</text>
         </g>
         <g data-l="pixel" class="off">
           <image href={img('patch-joya')} x="520" y="150" width="230" height="230" clip-path="url(#wv-pixel-clip)" class="pixelated"></image>
           <rect x="520" y="150" width="230" height="230" rx="6" fill="url(#wv-pixel-grid)"></rect>
           <rect x="520" y="150" width="230" height="230" rx="6" fill="none" stroke="var(--ink)" stroke-width="2"></rect>
-          <text x="520" y="420" class="lab ink strong">40 × 40 pixels</text>
-          <text x="520" y="450" class="lab slate small">what the model sees</text>
+          <text x="520" y="420" class="lab ink strong">{tx('40 × 40 pixels')}</text>
+          <text x="520" y="450" class="lab slate small">{tx('what the model sees')}</text>
         </g>
       </g>
 
       <rect data-l="night" class="off" width="800" height="600" fill="var(--wv-night)"></rect>
 
-      <!-- 4 · transfer learning: a frozen, pre-trained network and a small trained part -->
+      <!-- 4 · transfer learning: a network that already learned to see (edges, textures, shapes)
+           from everyday photos is reused locked; only a small part learns the varieties -->
       <g data-l="transfer" class="off">
-        <text x="40" y="74" class="lab caps soft">METHOD 1</text>
-        <g data-l="t-part" class="off">
+        <text x="40" y="74" class="lab caps soft">{tx('METHOD 1')}</text>
+
+        <!-- before: everyday photos teach the big network what to look for -->
+        {everyday.map((e) => (
+          <g data-l="t-every" class="off">
+            <rect x="58" y={e.y} width="64" height="64" rx="8" fill="var(--wv-panel)" stroke="var(--wv-panel-2)" stroke-width="1.5"></rect>
+            <g transform={`translate(58 ${e.y})`} fill="var(--wv-on-2)"><Fragment set:html={e.art} /></g>
+          </g>
+        ))}
+        <g data-l="t-every-lab" class="off">
+          {tx('everyday photos').split(' ').map((w, i) => <text x="40" y={440 + i * 26} class="lab soft small">{w}</text>)}
+        </g>
+
+        <!-- the big network: three columns of detectors, simple to complex -->
+        <g data-l="t-block" class="off">
+          <rect x="176" y="160" width="300" height="250" rx="10" fill="var(--wv-panel)" stroke="var(--wv-panel-2)" stroke-width="1.5"></rect>
+        </g>
+        {tiles.map((t) => (
+          <g data-l="t-tile" data-col={t.col} data-act={t.act} class="off">
+            <rect x={t.x} y={t.y} width="56" height="56" rx="6" fill="var(--wv-panel-2)"></rect>
+            <g transform={`translate(${t.x} ${t.y})`} fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--wv-on)"><Fragment set:html={t.art} /></g>
+          </g>
+        ))}
+        {columns.map((c, i) => (
+          <text data-l="t-col" class="off lab soft small" x={tileX[i] + 28} y="446" text-anchor="middle">{c.label}</text>
+        ))}
+        <g data-l="t-lock" class="off">
+          <g style="color: var(--wv-on-2)"><use href="#wv-icon-lock" x="174" y="112" width="30" height="30"></use></g>
+          <text x="210" y="135" class="lab soft small">{tx('learned from everyday photos, then locked')}</text>
+        </g>
+
+        <!-- after: a watermelon photo goes in and lights up the detectors that match it -->
+        <g data-l="t-photo" class="off">
           <image href={img('patch-anna')} x="40" y="235" width="100" height="100" clip-path="url(#wv-patch-clip)" class="pixelated"></image>
-          <text x="40" y="366" class="lab soft small">a photo</text>
+          <text x="40" y="366" class="lab soft small">{tx('a photo')}</text>
+          <path d="M148,285 H170" stroke="var(--wv-on-2)" stroke-width="2.5" stroke-linecap="round"></path>
         </g>
-        <g data-l="t-part" class="off">
-          <rect x="190" y="160" width="286" height="250" rx="10" fill="var(--wv-panel)" stroke="var(--wv-panel-2)" stroke-width="1.5"></rect>
-          {layers.map((l) => <rect x={l.x} y={285 - l.h / 2} width="24" height={l.h} rx="4" fill="var(--wv-panel-2)"></rect>)}
-          <g style="color: var(--wv-on-2)"><use href="#wv-icon-lock" x="430" y="170" width="34" height="34"></use></g>
-          <text x="190" y="444" class="lab">already trained</text>
-          <text x="190" y="472" class="lab soft small">on everyday photos; frozen</text>
-        </g>
-        <g data-l="t-part" class="off">
-          <rect x="508" y="225" width="104" height="120" rx="10" fill="var(--wv-panel)" stroke="var(--wv-on)" stroke-width="2.5"></rect>
-          <rect x="530" y="251" width="20" height="68" rx="4" fill="var(--wv-on)"></rect>
-          <rect x="570" y="263" width="20" height="44" rx="4" fill="var(--wv-on)"></rect>
-          <g style="color: var(--wv-on)"><use href="#wv-icon-spark" x="576" y="188" width="32" height="32"></use></g>
-          <text x="508" y="376" class="lab small">trained</text>
-          <text x="508" y="402" class="lab small">here</text>
-        </g>
-        <g data-l="t-part" class="off">
+        <circle data-l="t-pulse" class="off" cx="150" cy="285" r="7" fill="var(--wv-on)"></circle>
+
+        <!-- the small part that is trained: it learns which detectors point to each variety -->
+        {links.map((l) => (
+          <path data-l="t-link" data-w={l.w} class="off" d={l.d} fill="none" stroke="var(--wv-on)" stroke-width={r1(1.5 + l.w * 3)} stroke-linecap="round"></path>
+        ))}
+        <g data-l="t-head" class="off">
+          <rect x="520" y="230" width="84" height="110" rx="10" fill="var(--wv-panel)" stroke="var(--wv-on)" stroke-width="2.5"></rect>
+          <rect x="542" y="252" width="16" height="66" rx="4" fill="var(--wv-on)"></rect>
+          <rect x="568" y="266" width="16" height="38" rx="4" fill="var(--wv-on)"></rect>
+          <g style="color: var(--wv-on)"><use href="#wv-icon-spark" x="580" y="192" width="32" height="32"></use></g>
+          <text x="508" y="376" class="lab small">{tx('trained here,')}</text>
+          <text x="508" y="402" class="lab small">{tx('on watermelon photos')}</text>
+          <path d="M612,285 H636" stroke="var(--wv-on-2)" stroke-width="2.5" stroke-linecap="round"></path>
           {varieties.map((v, k) => (
-            <g data-l="t-out" data-id={v.id} opacity={k === 0 ? 1 : 0.45}>
+            <g data-l="t-out" data-id={v.id} opacity="0.45">
               <circle cx="654" cy={245 + k * 40} r="8" fill={`var(--wv-${v.id})`}></circle>
               <text x="670" y={253 + k * 40} class="lab small">{v.name}</text>
             </g>
           ))}
         </g>
-        <path d="M148,285 H182 M484,285 H500 M620,285 H638" stroke="var(--wv-on-2)" stroke-width="2.5" stroke-linecap="round"></path>
-        <circle data-l="t-pulse" class="off" cx="150" cy="285" r="7" fill="var(--wv-on)"></circle>
-        <text data-l="t-chip" class="off lab soft small" x="40" y="548">compared:</text>
-        {chips.map((c) => (
-          <g data-l="t-chip" class="off">
-            <rect data-kept={c.kept ? '1' : undefined} x={c.x} y="520" width={c.w} height="40" rx="20" fill="var(--wv-panel)" stroke="var(--wv-on-2)" stroke-width="1.5"></rect>
-            <text x={c.x + c.w / 2} y="548" text-anchor="middle" class="lab small">{c.name}</text>
-          </g>
-        ))}
-        <text data-l="t-kept" class="off lab small" x="698" y="548">✓ kept</text>
+        <g data-l="t-key" class="off">
+          <rect x="40" y="532" width="22" height="22" rx="4" fill="var(--wv-panel-2)" stroke="var(--wv-on)" stroke-width="2"></rect>
+          <text x="76" y="551" class="lab soft small">{tx('bright: the photo shows that pattern')}</text>
+        </g>
       </g>
 
-      <!-- 5 · metric learning: the test photos as points that gather by variety -->
+      <!-- 5 · metric learning: trained on three photos at a time (two alike pulled together, one
+           different pushed away), the photos end up grouped by variety; a new photo takes the
+           name of its nearest neighbours -->
       <g data-l="metric" class="off">
-        <text x="40" y="74" class="lab caps soft">METHOD 2</text>
+        <text x="40" y="74" class="lab caps soft">{tx('METHOD 2')}</text>
+
+        <!-- one training round: anchor, a photo of the same variety, one of another -->
+        <g data-l="m-trip" class="off">
+          <text x="40" y="118" class="lab soft small">{tx('it learns from three photos at a time')}</text>
+          <g transform="translate(-64 20)">
+          <g data-l="m-same">
+            <image href={img('patch-anna')} x="150" y="150" width="72" height="72" transform="translate(372 0) scale(-1 1)" class="pixelated"></image>
+            <rect x="150" y="150" width="72" height="72" rx="4" fill="none" stroke="var(--wv-anna)" stroke-width="4"></rect>
+          </g>
+          <g>
+            <image href={img('patch-anna')} x="330" y="230" width="72" height="72" class="pixelated"></image>
+            <rect x="330" y="230" width="72" height="72" rx="4" fill="none" stroke="var(--wv-anna)" stroke-width="4"></rect>
+          </g>
+          <g data-l="m-other">
+            <image href={img('patch-joya')} x="474" y="230" width="72" height="72" class="pixelated"></image>
+            <rect x="474" y="230" width="72" height="72" rx="4" fill="none" stroke="var(--wv-joya)" stroke-width="4"></rect>
+          </g>
+          <g data-l="m-push" class="off" fill="none" stroke="var(--wv-on)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M246,330 H304 M296,322 L304,330 L296,338"></path>
+            <path d="M408,330 H354 M362,322 L354,330 L362,338"></path>
+            <path d="M478,330 H590 M582,322 L590,330 L582,338"></path>
+          </g>
+          <g data-l="m-push" class="off">
+            <text x="324" y="378" text-anchor="middle" class="lab small">{tx('same variety:')}</text>
+            <text x="324" y="404" text-anchor="middle" class="lab soft small">{tx('pulled closer')}</text>
+            <text x="640" y="378" text-anchor="middle" class="lab small">{tx('other variety:')}</text>
+            <text x="640" y="404" text-anchor="middle" class="lab soft small">{tx('pushed away')}</text>
+          </g>
+          </g>
+        </g>
+
+        <!-- after many rounds: every test photo on the map -->
         {varieties.map((v) => (
           <g data-l="m-ring" class="off">
             <circle cx={G[v.id].x} cy={G[v.id].y} r={G[v.id].r} fill="none" stroke={`var(--wv-${v.id})`} stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"></circle>
@@ -219,11 +326,25 @@ const fruit = [
         {pts.map((p) => (
           <circle data-l="m-pt" class="off" data-wrong={p.truth !== p.said ? '1' : undefined} data-a={p.a.join(',')} data-b={p.b.join(',')} r="6.5" fill={`var(--wv-${p.truth})`} stroke="var(--wv-night)" stroke-width="1.5"></circle>
         ))}
+
+        <!-- a new photo: named after its nearest neighbours -->
+        <g data-l="m-new" class="off">
+          {near.map((q) => (
+            <g>
+              <line x1={fresh.x} y1={fresh.y} x2={q.x} y2={q.y} stroke="var(--wv-on)" stroke-width="2.5" stroke-dasharray="4 5" stroke-linecap="round"></line>
+            </g>
+          ))}
+          <path d={`M${fresh.x},${fresh.y - 15} L${fresh.x + 20},125 H324`} fill="none" stroke="var(--wv-on-2)" stroke-width="1.5"></path>
+          <image href={img('patch-anna')} x={fresh.x - 15} y={fresh.y - 15} width="30" height="30" class="pixelated"></image>
+          <rect x={fresh.x - 15} y={fresh.y - 15} width="30" height="30" rx="3" fill="none" stroke="var(--wv-on)" stroke-width="3"></rect>
+          <text x="332" y="132" class="lab small">{tx('new photo:')} <tspan class="strong">Anna</tspan></text>
+        </g>
+
         <g data-l="m-legend" class="off">
           <circle cx="50" cy="552" r="6.5" fill="var(--wv-on-2)"></circle>
-          <text x="66" y="560" class="lab soft small">a test photo, coloured by variety</text>
+          <text x="66" y="560" class="lab soft small">{tx('a test photo, coloured by variety')}</text>
           <circle cx="442" cy="552" r="6.5" fill="var(--wv-on-2)" stroke="var(--wv-on)" stroke-width="3"></circle>
-          <text x="460" y="560" class="lab soft small">ring: named wrongly</text>
+          <text x="460" y="560" class="lab soft small">{tx('ring: named wrongly')}</text>
         </g>
       </g>
 
@@ -233,19 +354,19 @@ const fruit = [
           <g data-l="r-panel" class="off">
             <text x={p.x} y="78" class="lab soft small">{p.title}</text>
             <text x={p.x - 3} y="150" class="num" font-size="66">{p.acc}</text>
-            <text x={p.x + 172} y="150" class="lab soft small">correct</text>
+            <text x={p.x + 172} y="150" class="lab soft small">{tx('correct')}</text>
             {p.rows.map((row) => (
               <g>
                 <text x={p.x} y={row.y} class="lab small">{row.name}</text>
                 <rect x={p.x + 110} y={row.y - 18} width="200" height="20" rx="4" fill="var(--wv-panel)"></rect>
                 <rect data-l="r-bar" data-w={row.w} x={p.x + 110} y={row.y - 18} width="0" height="20" rx="4" fill={`var(--wv-${row.id})`}></rect>
-                <text x={p.x + 110} y={row.y + 30} class="lab soft small">{row.right} of {row.total}</text>
+                <text x={p.x + 110} y={row.y + 30} class="lab soft small">{row.right} {tx('of')} {row.total}</text>
               </g>
             ))}
           </g>
         ))}
         <g data-l="r-note" class="off">
-          <text x="40" y="566" class="lab">Joya is the hardest for both</text>
+          <text x="40" y="566" class="lab">{tx('Joya is the hardest for both')}</text>
         </g>
       </g>
 

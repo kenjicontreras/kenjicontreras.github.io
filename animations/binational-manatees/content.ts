@@ -38,7 +38,7 @@ export const content: StoryContent = {
       body: 'Each manatee communicates with its own intonation. A spectrogram turns a call into a picture: one animal’s calls vary, but they share features that set it apart from the others.',
       points: [
         'On average, a manatee calls about once or twice every five minutes.',
-        'Calls differ in pitch, range and shape. The study used two clear types: squeaks (flat) and hi-squeaks (hill-shaped).',
+        'Calls differ in pitch, range and shape. The study used two clear types: squeaks (flat) and high-squeaks (hill-shaped).',
         'An individual’s calls can stay recognisable for years.',
       ],
       hood: 'Spectrograms (short-time Fourier transform): time on x, frequency on y, energy as brightness. Calls differ in frequency, bandwidth and contour. Each column: two calls from one manatee, two known individuals and two identified in Panama.',

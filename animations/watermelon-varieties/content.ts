@@ -11,15 +11,14 @@ export const content: StoryContent = {
       body: 'Watermelon is one of Panama’s export crops, and sorting the fruit by variety depends on people inspecting each one. The goal was to test whether a machine learning model could identify the variety from a photo and automate part of that work.',
       points: [
         'The aim: a recognition step that could work on a conveyor belt in a packing line.',
-        'Earlier work by the same group used hand-designed image features. This study lets neural networks find their own.',
+        'Earlier work by the same group extracted colour and texture features with image-processing algorithms. In this study, neural networks learn those features automatically from the photos: they work out for themselves which markings and shades of the rind set each variety apart, without anyone programming them in advance.',
       ],
     },
     {
       title: 'Three varieties',
       body: 'Anna, Joya and Quetzali are the three export varieties in the study. They differ in their markings, their shape and the depth of their green, but not by much.',
       points: [
-        'These are photographs of the fruit used in the study.',
-        'Each fruit was photographed against a white background.',
+        'The 330 photos form a data set of these three export varieties, with fruit provided by APSECU, the Asociación de Productores de Sandía de Exportación Cascajalillo Unido.',
       ],
       facts: [
         { value: '120', label: 'photos of Anna' },
@@ -41,6 +40,7 @@ export const content: StoryContent = {
       title: 'Method 1: borrow a trained eye',
       body: 'Networks that have already learned to see from a very large collection of everyday photos are reused as they are. Only a small final part is trained to tell the three varieties apart.',
       points: [
+        'From those photos the network already learned to spot edges, textures and shapes, which also describe a watermelon’s rind.',
         'The study compared three well-known networks of this kind.',
         'One scored highest during training (94%), but it was memorising the photos. The most consistent one was kept.',
       ],
@@ -50,7 +50,7 @@ export const content: StoryContent = {
       title: 'Method 2: learn what “similar” means',
       body: 'The second method does not ask “which variety?” directly. It learns to place photos of the same variety close together on a map, and then names a new photo after its neighbours.',
       points: [
-        'It trains on triplets: a photo, another of the same variety, and one of a different variety.',
+        'It learns from three photos at a time: two of the same variety are pulled closer, and one of another variety is pushed away.',
         'A model of this kind can later learn a new variety from very few examples, which matters when photos are scarce.',
         'On the map, Joya overlaps both of the others.',
       ],
@@ -71,12 +71,12 @@ export const content: StoryContent = {
     },
     {
       title: 'Where it leads',
-      body: 'Both approaches are feasible, and both leave room to improve. The next steps are more photos and a better way to capture what makes Joya different. The goal is a camera over a conveyor belt that names each fruit as it passes.',
+      body: 'With only 330 photos, both methods named the variety correctly in more than 8 out of 10 cases. The next step is to build them into a system that helps growers sort their fruit, such as a camera over the conveyor belt.',
       points: [
-        'The paper’s own reading: slight overfitting, caused by too little data.',
+        'The paper concludes that both models memorised their training photos slightly, which is expected with so little data.',
         'Ideas named for the next round: attention-based networks, generated images to enlarge the data set, and few-shot learning.',
       ],
-      hood: 'Presented at the IEEE International Symposium on Industrial Electronics (ISIE), 2022.',
+      hood: 'Presented as a poster at the LatinX in AI workshop at ICCV 2022 (Contreras et al. 2022).',
     },
   ],
   stack: ['Python', 'Keras', 'EfficientNet', 'Triplet loss', 'K-NN'],
@@ -109,5 +109,5 @@ export const content: StoryContent = {
   credit:
     'Photographs of the three varieties and of the rind patches are from Contreras et al. 2022 (© 2022 IEEE), reused by the author. The points on the map are illustrative, but how many fall in each group follows the paper’s confusion matrix. The packing and conveyor scenes are drawings.',
   stageAlt:
-    'Animated diagram in seven stages: crates of watermelons with question tags; photographs of the three varieties, Anna, Joya and Quetzali, which look much alike; 330 small squares, one per photo, and one photo enlarged to show its 40 by 40 pixels; a photo passing through a large frozen network and a small trained part that names the variety; 100 points gathering into three groups, with the Joya group overlapping the other two; bars comparing the two methods for each variety, 84% and 81% overall; and watermelons passing under a camera on a conveyor belt and receiving name tags.',
+    'Animated diagram in seven stages: crates of watermelons with question tags; photographs of the three varieties, Anna, Joya and Quetzali, which look much alike; 330 small squares, one per photo, and one photo enlarged to show its 40 by 40 pixels; everyday photos teaching a large network to spot edges, textures and shapes before it is locked, then a watermelon photo lighting up the patterns it contains and a small trained part naming the variety; three photos in a training round, two of the same variety pulled together and one of another pushed away, then 100 points gathering into three groups, with the Joya group overlapping the other two, and a new photo named after its nearest neighbours; bars comparing the two methods for each variety, 84% and 81% overall; and watermelons passing under a camera on a conveyor belt and receiving name tags.',
 };

@@ -8,7 +8,7 @@ export const profile = {
   location: 'Panama City, Panama',
   headline: 'AI for data that’s hard to work with.',
   intro:
-    'I turn messy data into clear answers and build AI tools that automate repetitive work. Over five years of work in research and business, with methods published in peer-reviewed journals.',
+    'I turn messy data into clear answers and build AI tools that automate repetitive work. Over five years of applied research, with methods published in peer-reviewed journals, plus industry experience adapting text-analysis algorithms to Spanish-language survey data.',
   availability: 'Taking projects in data science, AI tools and workflow automation. Remote, in English or Spanish.',
   email: 'kcinao@gmail.com',
   links: {
@@ -46,8 +46,8 @@ export const skills: Skill[] = [
     line: 'Implementing and optimising models for scientific, business and field data, even when it’s noisy, scarce or unlabelled.',
   },
   {
-    name: 'AI automation',
-    line: 'Generative AI tools that read, sort and summarise text, draft reports and automate repetitive work, with people reviewing the results and data kept under your control.',
+    name: 'Generative AI and text analysis',
+    line: 'Generative AI and natural language processing (NLP) tools that read, sort and summarise text in Spanish or English, draft reports and automate repetitive work, with people reviewing the results and data kept under your control.',
   },
   {
     name: 'Computer vision',
@@ -58,8 +58,8 @@ export const skills: Skill[] = [
     line: 'Cleaning and analysing sound and instrument data to separate meaningful signals from noise.',
   },
   {
-    name: 'Data analysis and visualisation',
-    line: 'Statistics, data pipelines and interactive dashboards, in Power BI or as custom web tools.',
+    name: 'Statistics and interactive dashboards',
+    line: 'Statistical analysis of surveys and research data in SPSS and Python, from cleaning and preparing the data to interactive dashboards in Power BI or custom web tools.',
   },
   {
     name: 'Applied research',
@@ -87,7 +87,24 @@ export const venues = [
   'Artificial Intelligence in the Life Sciences',
 ];
 
-export const about = {
+/** A reference: their public profile is linked; phones and emails stay in the private CV. */
+export type Reference = {
+  name: string;
+  role: string;
+  work: string;
+  href: string;
+  link: string;
+  /** A second public link (same label in both languages). */
+  more?: { href: string; link: string };
+};
+
+export const about: {
+  paragraphs: string[];
+  education: { title: string; place: string; years: string }[];
+  teaching: { title: string; place: string; years: string; /** The academy's public Instagram. */ href?: string };
+  languages: string[];
+  references: Reference[];
+} = {
   paragraphs: [
     'I trained as a telecommunications engineer, but nature has always pulled me in. I found it fascinating how numbers and statistics could make sense of something as complex as animal sounds or the lives of insects. Most of the data I’ve worked with since has been noisy, scarce or recorded in the field, so I learned to build AI that works in exactly those conditions.',
     'Outside work, I’ve practised martial arts for ten years and now teach classes to people of all ages. The training and its philosophy give me balance that complements the way I work. Additionally, I love learning languages: besides Spanish and English, I’ve picked up a few others along the way to broaden my cultural background and communication skills.',
@@ -100,7 +117,46 @@ export const about = {
     title: 'Martial arts instructor, black belt in Taekwondo and Haidong Gumdo (Korean sword)',
     place: 'Academia de Artes Marciales León',
     years: '2023 to now',
+    href: 'https://www.instagram.com/artesmarcialesleon/',
   },
   languages: ['Spanish, native', 'English, advanced', 'German, basic', 'Japanese, basic'],
+  references: [
+    {
+      name: 'Dr. Hector M. Guzman',
+      role: 'Staff Scientist, Smithsonian Tropical Research Institute',
+      work: 'Research supervisor: manatee acoustic monitoring',
+      href: 'https://stri.si.edu/es/cientifico/hector-m-guzman',
+      link: 'STRI profile',
+    },
+    {
+      name: 'Dr. Fernando Merchán',
+      role: 'Researcher, Faculty of Electrical Engineering, UTP',
+      work: 'Research supervisor: manatee acoustic monitoring, disease-vector identification',
+      href: 'https://www.academia.utp.ac.pa/fernando-merchan/pagina-personal-dr-fernando-merchan',
+      link: 'UTP profile',
+    },
+    {
+      name: 'Dr. Javier Sánchez-Galán',
+      role: 'Researcher, Faculty of Computational Systems Engineering, UTP',
+      work: 'Research supervisor: watermelon classification, disease-vector identification',
+      href: 'https://www.academia.utp.ac.pa/javier-sanchezgalan/curriculum-vitae',
+      link: 'UTP profile',
+    },
+    {
+      name: 'Mgtr. Ana Patricia Alfonso',
+      role: 'Regional Director, CID Gallup',
+      work: 'My director at CID Gallup',
+      href: 'https://pa.linkedin.com/in/ana-patricia-alfonso-salinas',
+      link: 'LinkedIn',
+    },
+    {
+      name: 'Joel León',
+      role: 'Director, Academia de Artes Marciales León',
+      work: 'Martial arts teaching',
+      href: 'https://wa.me/50765509596',
+      link: 'WhatsApp +507 6550-9596',
+      more: { href: 'https://www.instagram.com/artesmarcialesleon/', link: 'Instagram' },
+    },
+  ],
 };
 

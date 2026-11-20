@@ -1,12 +1,20 @@
 ---
-import { experience } from '../data/work';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
+const { experience } = dataFor(lang);
 ---
 
 <section class="block block-sand" id="experience" aria-labelledby="experience-title">
   <div class="wrap">
     <div class="block-head">
-      <h2 id="experience-title">Experience</h2>
-      <p>Four funded research projects with the Smithsonian, UTP and INDICASAT-AIP, then survey analytics at CID Gallup.</p>
+      <h2 id="experience-title">{t.experience.title}</h2>
+      <p>{t.experience.lede}</p>
     </div>
 
     <ol class="roles">
@@ -27,7 +35,16 @@ import { experience } from '../data/work';
                   <div>
                     <dt>{it.label}</dt>
                     <dd>{it.text}</dd>
-                    {it.codes?.map((c) => <dd class="code">{c}</dd>)}
+                    {it.codes?.map((c) => {
+                      // "Project FID18-076 · what it was": the code never breaks; the description may wrap.
+                      const [code, ...rest] = c.split(' · ');
+                      return (
+                        <dd class="code">
+                          <span class="nb">{code}</span>
+                          {rest.length > 0 && ` · ${rest.join(' · ')}`}
+                        </dd>
+                      );
+                    })}
                   </div>
                 ))}
               </dl>
@@ -93,13 +110,20 @@ import { experience } from '../data/work';
     margin-top: 0.3rem;
   }
   .items dd.code + dd.code {
-    margin-top: 0.1rem;
+    margin-top: 0.3rem;
   }
   .items dd.code {
     font-size: 0.78rem;
     color: var(--slate);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
+    line-height: 1.4;
+    text-wrap: balance;
+    /* a wrapped line sits indented under its code */
+    padding-left: 1em;
+    text-indent: -1em;
+  }
+  .items dd.code .nb {
     white-space: nowrap;
   }
   .items {

@@ -20,7 +20,7 @@ reduce = opt('--reduce', flag=True); stage = opt('--stage', flag=True)
 fractions = [float(x) for x in opt('--fractions', '0.97').split(',')]
 suffix = opt('--suffix', '')
 story, out, w, h = a[0], a[1], int(a[2]), int(a[3])
-URL = f'http://localhost:4321/animations/{story}{suffix}'
+URL = f"http://localhost:4321{'/es' if os.environ.get('LANG_PAGE') == 'es' else ''}/animations/{story}{suffix}"
 os.makedirs(out, exist_ok=True)
 
 async def main():

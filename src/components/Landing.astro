@@ -1,0 +1,176 @@
+---
+// The landing page, in either language. src/pages/index.astro renders it in
+// English at /, src/pages/es/index.astro in Spanish at /es/.
+import Base from '../layouts/Base.astro';
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import Skills from './Skills.astro';
+import ProjectTabs from './ProjectTabs.astro';
+import Experience from './Experience.astro';
+import About from './About.astro';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
+const { profile } = dataFor(lang);
+
+const cvHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/' + profile.cv;
+const contact = [
+  profile.email && { label: t.contact.email, href: `mailto:${profile.email}` },
+  profile.links.linkedin && { label: 'LinkedIn', href: profile.links.linkedin },
+  profile.links.github && { label: 'GitHub', href: profile.links.github },
+].filter(Boolean) as { label: string; href: string }[];
+---
+
+<Base title={t.metaTitle(profile.name)} description={t.metaDescription} pageType="service" lang={lang}>
+  <a href="#main" class="skip">{t.skip}</a>
+  <Header lang={lang} />
+
+  <main id="main">
+    <Hero lang={lang} />
+    <Skills lang={lang} />
+    <ProjectTabs lang={lang} />
+    <Experience lang={lang} />
+    <About lang={lang} />
+  </main>
+
+  <footer class="contact" id="contact" aria-labelledby="contact-title">
+    <div class="wrap cgrid">
+      <div class="main">
+      <h2 id="contact-title">{t.contact.title}</h2>
+      <p class="lede">{t.contact.lede}</p>
+      <div class="links">
+        {contact.map((c, i) => <a class:list={['btn', i === 0 ? 'btn-light' : 'btn-ghost']} href={c.href} target={c.href.startsWith('mailto') ? undefined : '_blank'} rel="noopener">{c.label}</a>)}
+        {profile.cv && <a class="btn btn-ghost" href={cvHref} download>{t.contact.cv}</a>}
+      </div>
+      {profile.email && <p class="addr">{t.contact.or} <a href={`mailto:${profile.email}`}>{profile.email}</a></p>}
+      </div>
+      <aside class="next" aria-labelledby="next-title">
+        <h3 id="next-title">{t.contact.howTitle}</h3>
+        <p>{t.contact.how}</p>
+      </aside>
+    </div>
+    <div class="wrap closing">
+      <p>{profile.name} · {t.contact.city} · © {new Date().getFullYear()}</p>
+    </div>
+  </footer>
+</Base>
+
+<style>
+  .contact {
+    background: var(--navy);
+    color: #e9f3f4;
+    padding-block: clamp(4.5rem, 10vw, 8rem) clamp(1rem, 2vw, 1.5rem);
+  }
+  @media (max-width: 600px) {
+    .contact {
+      padding-top: 3.5rem;
+    }
+  }
+  .contact h2 {
+    font-size: var(--step-5);
+    font-stretch: 112%;
+    max-width: 14ch;
+  }
+  .cgrid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 3rem clamp(2rem, 6vw, 6rem);
+    align-items: end;
+  }
+  /* flush with the right edge, like the header's Contact link */
+  .next {
+    justify-self: end;
+    width: min(100%, 42ch);
+  }
+  .next h3 {
+    font-size: var(--step-0);
+    font-stretch: 100%;
+    font-weight: 650;
+    color: #7fd6cf;
+  }
+  .next p {
+    margin-top: 0.9rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(233, 243, 244, 0.18);
+    color: #e9f3f4;
+    font-family: var(--font-text);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    max-width: 42ch;
+  }
+  .closing {
+    margin-top: clamp(3.5rem, 7vw, 5.5rem);
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(233, 243, 244, 0.18);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem 2rem;
+    color: #b9d0d5;
+    font-size: var(--step--1);
+  }
+  @media (max-width: 860px) {
+    .next {
+      justify-self: start;
+    }
+    .cgrid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .contact .lede {
+    margin-top: 1.5rem;
+    font-family: var(--font-text);
+    max-width: 52ch;
+    font-size: var(--step-1);
+    color: #b9d0d5;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-top: 2.25rem;
+  }
+  .addr {
+    margin-top: 1rem;
+    color: #b9d0d5;
+  }
+  .addr a {
+    color: #e9f3f4;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+  .addr a:hover {
+    color: #7fd6cf;
+  }
+  .btn-light {
+    background: #7fd6cf;
+    color: var(--navy);
+  }
+  .btn-light:hover {
+    background: #a6e5df;
+    color: var(--navy);
+  }
+  .btn-ghost {
+    border: 1.5px solid rgba(233, 243, 244, 0.45);
+    color: #e9f3f4;
+  }
+  .btn-ghost:hover {
+    border-color: #7fd6cf;
+    color: #7fd6cf;
+  }
+  .contact :focus-visible {
+    outline-color: #7fd6cf;
+  }
+  @media (max-width: 520px) {
+    .links .btn {
+      width: 100%;
+    }
+  }
+</style>

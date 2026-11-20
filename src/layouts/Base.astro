@@ -3,14 +3,19 @@ import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource-variable/source-serif-4/index.css';
 import '../styles/global.css';
 import { profile } from '../data/profile';
+import { t as tr, langs, pathFor, type Lang } from '../i18n/ui';
 
 interface Props {
   title: string;
   description: string;
   /** Page type for the design checks (`<html data-type>` and the page-type metas). */
   pageType?: 'service';
+  lang?: Lang;
+  /** Pages with a version in each language (the landing page) list the others for search engines. */
+  alternates?: boolean;
 }
-const { title, description, pageType } = Astro.props;
+const { title, description, pageType, lang = 'en', alternates = pageType === 'service' } = Astro.props;
+const t = tr(lang);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL(`${base}/og.png`, Astro.site);
@@ -18,7 +23,7 @@ const person = {
   '@context': 'https://schema.org',
   '@type': 'Person',
   name: profile.name,
-  jobTitle: profile.role,
+  jobTitle: t.jobTitle,
   email: `mailto:${profile.email}`,
   url: new URL(`${base}/`, Astro.site).href,
   address: { '@type': 'PostalAddress', addressLocality: 'Panama City', addressCountry: 'PA' },
@@ -28,7 +33,7 @@ const person = {
 ---
 
 <!doctype html>
-<html lang="en" data-type={pageType}>
+<html lang={lang} data-type={pageType}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -37,7 +42,10 @@ const person = {
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
     <meta name="theme-color" content="#f7fafb" />
+    {alternates && langs.map((l) => <link rel="alternate" hreflang={l} href={new URL(pathFor(l), Astro.site)} />)}
+    {alternates && <link rel="alternate" hreflang="x-default" href={new URL(pathFor('en'), Astro.site)} />}
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={t.ogLocale} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
@@ -52,11 +60,14 @@ const person = {
     {pageType && <script type="application/ld+json" set:html={JSON.stringify(person)} />}
     {pageType && <meta name="page-type" content={pageType} />}
     {pageType && <meta name="site-kind" content="other" />}
+    <slot name="head" />
   </head>
   <body>
     <slot />
     <script>
       import '../scripts/motion.ts';
+      // Temporary: tap diagnostic for the Android offset report, only with ?tapdebug.
+      if (new URLSearchParams(location.search).has('tapdebug')) import('../scripts/tapdebug.ts');
     </script>
   </body>
 </html>

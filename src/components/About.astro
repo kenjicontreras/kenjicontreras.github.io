@@ -1,7 +1,15 @@
 ---
 import { Picture } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
-import { about, venues, profile } from '../data/profile';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
+const { about, venues, profile } = dataFor(lang);
 
 // The portrait is picked up automatically from src/assets/kenji.(jpg|jpeg|png|webp)
 // and optimised at build time. Until it exists, a placeholder frame is shown.
@@ -23,7 +31,7 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
               formats={['avif', 'webp']}
               widths={[300, 480, 760]}
               sizes={photoTkd ? '(max-width: 860px) 45vw, 16vw' : '(max-width: 860px) 70vw, 30vw'}
-              alt="Kenji Contreras in a blue Haidong Gumdo uniform, holding a sword"
+              alt={t.about.altGumdo}
             />
             {photoTkd && (
               <Picture
@@ -31,7 +39,7 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
                 formats={['avif', 'webp']}
                 widths={[300, 480, 760]}
                 sizes="(max-width: 860px) 45vw, 16vw"
-                alt="Kenji Contreras in a white taekwondo uniform with a black belt"
+                alt={t.about.altTkd}
               />
             )}
           </>
@@ -42,12 +50,12 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
     </figure>
 
     <div class="text">
-      <h2 id="about-title" class="sec-title">About me</h2>
+      <h2 id="about-title" class="sec-title">{t.about.title}</h2>
       {about.paragraphs.map((p) => <p>{p}</p>)}
 
       <div class="facts">
         <div>
-          <h3>Education</h3>
+          <h3>{t.about.education}</h3>
           <ul class="plain">
             {
               about.education.map((e) => (
@@ -58,26 +66,51 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
               ))
             }
           </ul>
-          <h3>Teaching</h3>
+          <h3>{t.about.teaching}</h3>
           <ul class="plain">
             <li>
               <strong>{about.teaching.title}</strong>
-              <span>{about.teaching.place}, {about.teaching.years}</span>
+              <span>
+                {about.teaching.href ? (
+                  <a class="draw" href={about.teaching.href} target="_blank" rel="noopener">{about.teaching.place}</a>
+                ) : (
+                  about.teaching.place
+                )}
+                , {about.teaching.years}
+              </span>
             </li>
           </ul>
-          <h3>Languages</h3>
+          <h3>{t.about.languages}</h3>
           <p class="tk">{about.languages.join('; ')}</p>
         </div>
         <div>
-          <h3>Peer-reviewed in</h3>
+          <h3>{t.about.venues}</h3>
           <ul class="venues">{venues.map((v) => <li>{v}</li>)}</ul>
-          <h3>All 13 publications</h3>
+          <h3>{t.about.publications}</h3>
           <p class="profiles">
             {profile.links.scholar && <a class="rg draw" href={profile.links.scholar} target="_blank" rel="noopener">Google Scholar</a>}
             {profile.links.researchgate && <a class="rg draw" href={profile.links.researchgate} target="_blank" rel="noopener">ResearchGate</a>}
           </p>
-          <p class="refs">References available on request.</p>
         </div>
+      </div>
+
+      <div class="references">
+        <h3>{t.about.refsTitle}</h3>
+        <ul class="ref-list">
+          {
+            about.references.map((r) => (
+              <li>
+                <strong>{r.name}</strong>
+                <span>{r.role}</span>
+                <span class="work">{r.work}</span>
+                <p class="ref-links">
+                  <a class="draw" href={r.href} target="_blank" rel="noopener">{r.link}</a>
+                  {r.more && <a class="draw" href={r.more.href} target="_blank" rel="noopener">{r.more.link}</a>}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
       </div>
     </div>
   </div>
@@ -202,10 +235,52 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
     min-height: 44px;
     font-weight: 600;
   }
-  .refs {
-    margin-top: 0.5rem;
+  .references {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .references h3 {
+    font-size: var(--step-0);
+    font-stretch: 100%;
+    font-weight: 650;
+    color: var(--teal-deep);
+    margin-bottom: 1rem;
+  }
+  .ref-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 3rem;
+  }
+  .ref-list li {
+    display: grid;
+    gap: 0.1rem;
+    align-content: start;
+    line-height: 1.4;
+  }
+  .ref-list strong {
+    font-weight: 650;
+  }
+  .ref-list span {
     color: var(--slate);
-    font-size: var(--step--1);
+    font-size: 0.95rem;
+  }
+  .ref-list .work {
+    color: var(--ink);
+  }
+  .ref-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+  }
+  .ref-list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-weight: 600;
   }
   .tk {
     color: var(--ink);
@@ -220,6 +295,11 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
       max-width: 22rem;
     }
     .facts {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .ref-list {
       grid-template-columns: 1fr;
     }
   }

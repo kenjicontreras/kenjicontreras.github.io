@@ -1,22 +1,42 @@
 ---
 import { profile } from '../data/profile';
+import { t as tr, langs, pathFor, type Lang } from '../i18n/ui';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
 ---
 
 <header class="header" data-header>
   <div class="wrap inner">
     <a href="#top" class="name">{profile.name}</a>
-    <nav aria-label="Sections">
-      <a class="draw" href="#skills">Skills</a>
-      <a class="draw" href="#work">Projects</a>
-      <a class="draw" href="#experience">Experience</a>
-      <a class="draw" href="#about">About</a>
-      <a class="draw contact-link" href="#contact">Contact</a>
+    <nav aria-label={t.navLabel}>
+      <a class="draw" href="#skills">{t.nav.skills}</a>
+      <a class="draw" href="#work">{t.nav.work}</a>
+      <a class="draw" href="#experience">{t.nav.experience}</a>
+      <a class="draw" href="#about">{t.nav.about}</a>
+      <a class="draw contact-link" href="#contact">{t.nav.contact}</a>
+      <span class="lang" role="group" aria-label={t.langLabel}>
+        {
+          langs.map((l) =>
+            l === lang ? (
+              <span class="cur" aria-current="true" lang={l} title={t.langName[l]}>{l.toUpperCase()}</span>
+            ) : (
+              <a class="alt" href={pathFor(l)} hreflang={l} lang={l} title={t.langName[l]} aria-label={t.langName[l]} data-lang-link>{l.toUpperCase()}</a>
+            ),
+          )
+        }
+      </span>
       <button
         type="button"
         class="menu-btn"
         aria-expanded="false"
         aria-controls="mobile-menu"
-        aria-label="Open menu"
+        aria-label={t.openMenu}
+        data-open-label={t.openMenu}
+        data-close-label={t.closeMenu}
         data-menu-btn
       >
         <span class="bars" aria-hidden="true"><span></span><span></span><span></span></span>
@@ -25,24 +45,42 @@ import { profile } from '../data/profile';
   </div>
   <!-- Phones: the sections the header has no room for, in a drop-down panel. -->
   <div class="mpanel" id="mobile-menu" hidden data-menu>
-    <nav class="wrap" aria-label="Sections">
-      <a href="#skills">Skills</a>
-      <a href="#work">Projects</a>
-      <a href="#experience">Experience</a>
-      <a href="#about">About</a>
-      <a href="#contact" class="m-contact">Contact</a>
+    <nav class="wrap" aria-label={t.navLabel}>
+      <a href="#skills">{t.nav.skills}</a>
+      <a href="#work">{t.nav.work}</a>
+      <a href="#experience">{t.nav.experience}</a>
+      <a href="#about">{t.nav.about}</a>
+      <a href="#contact" class="m-contact">{t.nav.contact}</a>
     </nav>
+    <div class="wrap m-lang" role="group" aria-label={t.langLabel}>
+      {
+        langs.map((l) =>
+          l === lang ? (
+            <span class="cur" aria-current="true" lang={l}>{t.langName[l]}</span>
+          ) : (
+            <a class="alt" href={pathFor(l)} hreflang={l} lang={l} data-lang-link>{t.langName[l]}</a>
+          ),
+        )
+      }
+    </div>
   </div>
 </header>
 
 <script>
+  // Switching language keeps the reader's place: the section or story in the hash carries over.
+  document.querySelectorAll<HTMLAnchorElement>('a[data-lang-link]').forEach((a) =>
+    a.addEventListener('click', () => {
+      if (location.hash) a.href = a.href.split('#')[0] + location.hash;
+    }),
+  );
+
   const btn = document.querySelector<HTMLButtonElement>('[data-menu-btn]');
   const panel = document.querySelector<HTMLElement>('[data-menu]');
   if (btn && panel) {
     const setOpen = (open: boolean) => {
       panel.hidden = !open;
       btn.setAttribute('aria-expanded', String(open));
-      btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      btn.setAttribute('aria-label', (open ? btn.dataset.closeLabel : btn.dataset.openLabel) || '');
     };
     btn.addEventListener('click', () => setOpen(panel.hidden));
     // A link closes the menu; the page then scrolls to the section as usual.
@@ -59,7 +97,7 @@ import { profile } from '../data/profile';
       if (!panel.hidden && !(e.target as Element).closest('[data-menu], [data-menu-btn]')) setOpen(false);
     });
     // Back to a wide screen: the full nav returns, so the panel closes.
-    window.matchMedia('(min-width: 641px)').addEventListener('change', (m) => m.matches && setOpen(false));
+    window.matchMedia('(min-width: 901px)').addEventListener('change', (m) => m.matches && setOpen(false));
   }
 </script>
 
@@ -120,13 +158,42 @@ import { profile } from '../data/profile';
     font-weight: 650;
     color: var(--teal-deep);
   }
+  /* Language switch: the current language in ink, the other one a link. */
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.5rem;
+    padding-left: 0.6rem;
+    border-left: 1px solid var(--rule);
+    font-size: var(--step--1);
+    font-weight: 650;
+    letter-spacing: 0.04em;
+  }
+  .lang .cur,
+  nav .lang a.alt {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 0.45rem;
+    font-weight: 650;
+  }
+  .lang .cur {
+    color: var(--ink);
+  }
+  nav .lang a.alt {
+    color: var(--slate);
+  }
+  nav .lang a.alt:hover {
+    color: var(--teal);
+  }
   .menu-btn,
   .mpanel {
     display: none;
   }
-  @media (max-width: 640px) {
+  @media (max-width: 900px) {
     /* Phones: every section, Contact included, lives in the menu. */
-    .inner > nav a {
+    .inner > nav a,
+    .inner > nav .lang {
       display: none;
     }
     .menu-btn {
@@ -180,7 +247,7 @@ import { profile } from '../data/profile';
       flex-direction: column;
       align-items: stretch;
       gap: 0;
-      padding-block: 0.5rem;
+      padding-block: 0.5rem 0;
     }
     .mpanel nav a {
       min-height: 48px;
@@ -194,8 +261,33 @@ import { profile } from '../data/profile';
       font-weight: 650;
       color: var(--teal-deep);
     }
+    .m-lang {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      border-top: 1px solid var(--rule);
+      padding-block: 0.25rem 0.5rem;
+      font-size: 1.0625rem;
+    }
+    .m-lang .cur,
+    .m-lang a.alt {
+      display: inline-flex;
+      align-items: center;
+      min-height: 48px;
+    }
+    .m-lang .cur {
+      font-weight: 650;
+      color: var(--ink);
+    }
+    .m-lang a.alt {
+      font-weight: 500;
+      color: var(--slate);
+      text-decoration: underline;
+      text-underline-offset: 0.25em;
+      text-decoration-color: var(--rule);
+    }
   }
-  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+  @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
     .bars span {
       transition: none;
     }

@@ -42,6 +42,7 @@ Every number shown in the story. "§" is the section of the paper.
 | Earlier work | the same group used traditional feature extraction and machine learning on the same varieties | §II |
 | Varieties | Anna Hybrid, Quetzali, Joya Hybrid: distinctive markings, shape and depth of colour | §II-A |
 | Photos | 330 in total: 120 Anna, 90 Joya, 120 Quetzali | Abstract, Fig. 1 |
+| Fruit source | data set created for the 3 export varieties; fruit provided by APSECU (Asociación de Productores de Sandía de Exportación Cascajalillo Unido) | LatinX in AI 2022 paper (ResearchGate 357355075), checked by Kenji 2026-11-20; ISIE acknowledgements |
 | Capture | RGB, 360 × 270 pixels, white background | §II-B |
 | Input | sub-sampled, cropped and resized to 40 × 40 pixels | §II-B |
 | Splits | 80/20 for transfer learning, 60/40 for metric learning | §II-B |

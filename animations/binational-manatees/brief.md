@@ -70,7 +70,7 @@ Every number shown in the story. "§" is the section of the 2025 paper unless no
 | Populations | small, geographically isolated, several poorly studied | §1 |
 | Call rate | one to two calls per 5-minute period (Phillips et al. 2004) | §1 |
 | What makes a voice individual | fundamental frequency, bandwidth, frequency range, call contour; stable for years | §1 |
-| Call types used | squeaks, hi-squeaks and mixes of both | Abstract, §2.3.5 |
+| Call types used | squeaks, high-squeaks and mixes of both | Abstract, §2.3.5 |
 | Validation setting | captured animals held in a floating cage for about 8 h | §4 Discussion (Merchan et al. 2024) |
 | Cluster review | fusion, manual revision, conservative discarding; matched across countries | §2.3.5 |
 | Compute | 128-core Xeon server; Ryzen 5950X workstation with RTX 3080 | §2.3 |
@@ -124,7 +124,7 @@ paper's text; slide-only facts were checked against outside sources.
   the strip that showed the lab's 110 under the stage has since been removed.
 - **Call rate.** "One to two calls per 5 minutes" is the paper's citation of Phillips et al. 2004,
   measured on Florida manatees.
-- **One animal's calls are not identical.** Fig. 2 shows squeaks (flat contour) and hi-squeaks
+- **One animal's calls are not identical.** Fig. 2 shows squeaks (flat contour) and high-squeaks
   (hill-shaped) from the same animal grouped together. The copy says calls "vary, but share
   features", not that they share one shape.
 - **83.75 %** is the share of calls assigned to their true source in the 2024 validation, which

@@ -11,6 +11,15 @@ import stationData from './data/stations.json';
 import clusterData from './data/clusters.json';
 import crossingData from './data/crossings.json';
 import specData from './data/spectrograms.json';
+import { translator, type Lang } from '../_shared/labels';
+import { es as labelsEs } from './labels';
+
+interface Props {
+  /** Page language; only the drawn labels change. */
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const tx = translator(lang, labelsEs);
 
 // ── helpers ───────────────────────────────────────────────────────────────
 let seed = 1661294; // deterministic, so builds are stable
@@ -35,10 +44,10 @@ const symbols = [
 
 // ── step 2: threats, as in the lab's summary ──────────────────────────────
 const threats = [
-  { icon: 'icon-net', label: 'Fishing nets' },
-  { icon: 'icon-wetland', label: 'Wetland loss' },
-  { icon: 'icon-pollution', label: 'Water pollution' },
-  { icon: 'icon-boat', label: 'Boat collisions' },
+  { icon: 'icon-net', label: tx('Fishing nets') },
+  { icon: 'icon-wetland', label: tx('Wetland loss') },
+  { icon: 'icon-pollution', label: tx('Water pollution') },
+  { icon: 'icon-boat', label: tx('Boat collisions') },
 ];
 
 // ── step 3: four manatees, each above two of its own calls ────────────────
@@ -85,16 +94,16 @@ const flights = callers.map((c) => {
 
 // ── step 4: the method, as five numbered stages and three results ─────────
 const pipeline = [
-  { icon: 'manatee', label: 'A manatee calls' },
-  { icon: 'hydrophone', label: 'Hydrophones record' },
-  { icon: 'icon-audio-review', label: 'Audio is reviewed' },
-  { icon: 'icon-neural', label: 'Neural network' },
-  { icon: 'icon-fingerprint', label: 'Manatee identified' },
+  { icon: 'manatee', label: tx('A manatee calls') },
+  { icon: 'hydrophone', label: tx('Hydrophones record') },
+  { icon: 'icon-audio-review', label: tx('Audio is reviewed') },
+  { icon: 'icon-neural', label: tx('Neural network') },
+  { icon: 'icon-fingerprint', label: tx('Manatee identified') },
 ].map((p, i) => ({ ...p, y: 78 + i * 111 }));
 const results = [
-  { icon: 'icon-waveform', id: 'files', text: '0', label: 'audio files analysed' },
-  { icon: 'icon-clock', id: 'hours', text: '> 0', label: 'hours of recording' },
-  { icon: 'icon-target', id: 'accuracy', text: '0%', label: 'identification accuracy' },
+  { icon: 'icon-waveform', id: 'files', text: '0', label: tx('audio files analysed') },
+  { icon: 'icon-clock', id: 'hours', text: '> 0', label: tx('hours of recording') },
+  { icon: 'icon-target', id: 'accuracy', text: '0%', label: tx('identification accuracy') },
 ].map((r, i) => ({ ...r, y: 44 + i * 182 }));
 
 // ── steps 5 to 7: the coast of Costa Rica and Panama ──────────────────────
@@ -187,17 +196,17 @@ const RL = range.labels as Record<string, P>;
 
 // ── step 6: conditions during crossings ───────────────────────────────────
 const weather = [
-  { icon: 'icon-rain', label: 'More rain', sub: '12.3 mm vs 8.3 mm' },
-  { icon: 'icon-thermo', label: 'Warmer air', sub: '+0.97 °C vs +0.80 °C' },
-  { icon: 'icon-flood', label: 'Seasonal floods', sub: 'open new routes' },
+  { icon: 'icon-rain', label: tx('More rain'), sub: '12.3 mm vs 8.3 mm' },
+  { icon: 'icon-thermo', label: tx('Warmer air'), sub: '+0.97 °C vs +0.80 °C' },
+  { icon: 'icon-flood', label: tx('Seasonal floods'), sub: tx('open new routes') },
 ].map((w, i) => ({ ...w, y: 44 + i * 86 }));
 
 // ── step 8: what people can do ────────────────────────────────────────────
 const actions = [
-  { icon: 'icon-boat', label: 'Boat slowly' },
-  { icon: 'icon-no-feed', label: 'Don’t feed them' },
-  { icon: 'icon-phone', label: 'Report sightings' },
-  { icon: 'icon-protected', label: 'Protect their homes' },
+  { icon: 'icon-boat', label: tx('Boat slowly') },
+  { icon: 'icon-no-feed', label: tx('Don’t feed them') },
+  { icon: 'icon-phone', label: tx('Report sightings') },
+  { icon: 'icon-protected', label: tx('Protect their homes') },
 ].map((a, i) => ({ ...a, x: 40 + (i % 2) * 368, y: 40 + Math.floor(i / 2) * 112 }));
 
 // ── step 9: why it matters. In murky water the manatee is heard, not seen, and
@@ -206,7 +215,7 @@ const actions = [
 const whyCardY = 196;
 const whyStations = [
   { id: 'cr', label: 'COSTA RICA', x: 40 },
-  { id: 'pa', label: 'PANAMA', x: 610 },
+  { id: 'pa', label: tx('PANAMA'), x: 610 },
 ].map((s) => {
   const x = s.x;
   const y = whyCardY;
@@ -258,12 +267,12 @@ const whyStations = [
         <text data-l="s1-item" class="off lab ink sci" x="400" y="118" text-anchor="middle">Trichechus manatus manatus</text>
         <g data-l="s1-item" class="off">
           <path d="M262,252 H548 M262,243 V261 M548,243 V261" fill="none" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"></path>
-          <text x="405" y="236" text-anchor="middle" class="num ink" font-size="30">3 to 4 m</text>
+          <text x="405" y="236" text-anchor="middle" class="num ink" font-size="30">{tx('3 to 4 m')}</text>
         </g>
         <g data-l="s1-item" class="off" style="color: var(--ink)">
           <use href="#bm-icon-weight" x="56" y="436" width="54" height="54"></use>
-          <text x="122" y="462" class="num ink" font-size="30">up to 600 kg</text>
-          <text x="122" y="490" class="lab ink">ecosystem engineer</text>
+          <text x="122" y="462" class="num ink" font-size="30">{tx('up to 600 kg')}</text>
+          <text x="122" y="490" class="lab ink">{tx('ecosystem engineer')}</text>
         </g>
       </g>
 
@@ -274,18 +283,18 @@ const whyStations = [
         {range.range.map((r) => (
           <path data-l={r.id === 'mainland' ? 'range-line' : 'range-island'} class={r.id === 'mainland' ? '' : 'off'} d={r.d} fill="none" stroke="var(--teal)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.85"></path>
         ))}
-        <text data-l="range-label" class="off lab caps slate" x={RL.mexico[0] + 6} y={RL.mexico[1] + 18} text-anchor="middle">MEXICO</text>
-        <text data-l="range-label" class="off lab caps slate" x={RL.brazil[0]} y={RL.brazil[1] + 8} text-anchor="middle">BRAZIL</text>
-        <text data-l="range-label" class="off lab slate sea" x={RL.antilles[0]} y={RL.antilles[1]} text-anchor="middle">Antilles</text>
+        <text data-l="range-label" class="off lab caps slate" x={RL.mexico[0] + 6} y={RL.mexico[1] + 18} text-anchor="middle">{tx('MEXICO')}</text>
+        <text data-l="range-label" class="off lab caps slate" x={RL.brazil[0]} y={RL.brazil[1] + 8} text-anchor="middle">{tx('BRAZIL')}</text>
+        <text data-l="range-label" class="off lab slate sea" x={RL.antilles[0]} y={RL.antilles[1]} text-anchor="middle">{tx('Antilles')}</text>
         <g data-l="study-box" class="off">
           <rect x={range.studyArea.x - 3} y={range.studyArea.y - 3} width={range.studyArea.width + 6} height={range.studyArea.height + 6} fill="none" stroke="var(--ink)" stroke-width="2.5" rx="3"></rect>
-          <text x={range.studyArea.x - 12} y={range.studyArea.y + range.studyArea.height + 40} text-anchor="end" class="lab ink">our study area</text>
+          <text x={range.studyArea.x - 12} y={range.studyArea.y + range.studyArea.height + 40} text-anchor="end" class="lab ink">{tx('our study area')}</text>
         </g>
         <g data-l="endangered" class="off">
           <rect x="40" y="318" width="196" height="38" rx="19" fill="var(--bm-alert)"></rect>
-          <text x="138" y="345" text-anchor="middle" class="lab caps" fill="#fff">ENDANGERED</text>
+          <text x="138" y="345" text-anchor="middle" class="lab caps" fill="#fff">{tx('ENDANGERED')}</text>
           <text x="38" y="414" class="num ink" font-size="62">&lt; 2,500</text>
-          <text x="40" y="446" class="lab ink">mature adults left</text>
+          <text x="40" y="446" class="lab ink">{tx('mature adults left')}</text>
         </g>
         <rect y="470" width="800" height="130" fill="var(--bm-sand)"></rect>
         <path d="M0,470 H800" stroke="var(--rule)" stroke-width="1.5"></path>
@@ -317,7 +326,7 @@ const whyStations = [
             <image href={c.src} x={c.x} y={c.y} width="150" height="190" preserveAspectRatio="none" clip-path={`url(#bm-wipe-${i})`}></image>
           </g>
         ))}
-        <text data-l="spec-note" class="off lab soft small" x="400" y="582" text-anchor="middle">each column: one manatee and two of its calls</text>
+        <text data-l="spec-note" class="off lab soft small" x="400" y="582" text-anchor="middle">{tx('each column: one manatee and two of its calls')}</text>
       </g>
       <!-- 4 · every call becomes a dot; dots that sound alike group; each group is one manatee -->
       <g data-l="cloud">
@@ -330,11 +339,12 @@ const whyStations = [
             <use href="#bm-manatee-side" x={c.x} y={c.y} width={c.w} height={c.h}></use>
           </g>
         ))}
+        {/* the Spanish key ("vocalización") is longer: its two entries sit further left and apart */}
         <g data-l="cloud-key" class="off">
-          <circle cx="206" cy="554" r="5.5" fill="var(--bm-signal)"></circle>
-          <text x="220" y="562" class="lab soft small">one call</text>
-          <circle cx="358" cy="554" r="13" fill="none" stroke="var(--bm-signal)" stroke-width="1.5"></circle>
-          <text x="382" y="562" class="lab soft small">one manatee: calls that sound alike</text>
+          <circle cx={lang === 'es' ? 146 : 206} cy="554" r="5.5" fill="var(--bm-signal)"></circle>
+          <text x={lang === 'es' ? 160 : 220} y="562" class="lab soft small">{tx('one call')}</text>
+          <circle cx={lang === 'es' ? 318 : 358} cy="554" r="13" fill="none" stroke="var(--bm-signal)" stroke-width="1.5"></circle>
+          <text x={lang === 'es' ? 342 : 382} y="562" class="lab soft small">{tx('one manatee: calls that sound alike')}</text>
         </g>
         {rings.filter((r) => r.id >= callers.length).map((r) => (
           <g data-l="who" class="off" style="color: var(--bm-on-deep)">
@@ -386,7 +396,7 @@ const whyStations = [
         {map.borders.map((b) => <path data-l="border" d={b.d} fill="none" stroke="var(--bm-sage)" stroke-width="1.2" stroke-dasharray="3 5" opacity="0.6"></path>)}
         <path data-l="coastline" d={map.coast.d} fill="none" stroke="var(--bm-sage)" stroke-width="1" opacity="0.45"></path>
         <text data-l="maplabel" x={L.CR[0]} y={L.CR[1]} text-anchor="middle" class="lab caps soft">COSTA RICA</text>
-        <text data-l="maplabel" x={L.PA[0]} y={L.PA[1]} text-anchor="middle" class="lab caps soft">PANAMA</text>
+        <text data-l="maplabel" x={L.PA[0]} y={L.PA[1]} text-anchor="middle" class="lab caps soft">{tx('PANAMA')}</text>
         <path data-l="corridor" class="off" d={corridor} fill="none" stroke="var(--bm-moss)" stroke-width="18" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"></path>
         {stations.map((s) => (
           <g data-l="station" class="off" transform={`translate(${s.x},${s.y})`}>
@@ -396,7 +406,7 @@ const whyStations = [
         ))}
         <g data-l="cap5" class="off">
           <circle cx="56" cy="556" r="5" fill="var(--bm-on-deep)"></circle>
-          <text x="72" y="564" class="lab">Hydrophone</text>
+          <text x="72" y="564" class="lab">{tx('Hydrophone')}</text>
         </g>
       </g>
       <g data-l="people">
@@ -419,24 +429,24 @@ const whyStations = [
         {crossers.map(() => <circle data-l="swimmer" class="off" r="6" fill="var(--bm-signal)" stroke="var(--bm-deep)" stroke-width="1.5"></circle>)}
         <g data-l="lab61" class="off">
           <text x={r1(pa.c[0] + pa.R + 16)} y={r1(pa.c[1] + 4)} class="num" font-size="46">61</text>
-          <text x={r1(pa.c[0] + pa.R + 18)} y={r1(pa.c[1] + 32)} class="lab soft">in Panama</text>
+          <text x={r1(pa.c[0] + pa.R + 18)} y={r1(pa.c[1] + 32)} class="lab soft">{tx('in Panama')}</text>
         </g>
         <g data-l="lab49" class="off">
           <text x={r1(barra.c[0] + barra.R + 50)} y={r1(barra.c[1] - 2)} class="num" font-size="46">49</text>
-          <text x={r1(barra.c[0] + barra.R + 52)} y={r1(barra.c[1] + 26)} class="lab soft">in Costa Rica</text>
+          <text x={r1(barra.c[0] + barra.R + 52)} y={r1(barra.c[1] + 26)} class="lab soft">{tx('in Costa Rica')}</text>
         </g>
         <g data-l="pop-key" class="off">
           <circle cx="46" cy="554" r="4.5" fill="var(--bm-pa)"></circle>
           <circle cx="60" cy="554" r="4.5" fill="var(--bm-cr)"></circle>
-          <text x="74" y="562" class="lab soft small">one manatee</text>
+          <text x="74" y="562" class="lab soft small">{tx('one manatee')}</text>
         </g>
         <g data-l="cross-key" class="off">
           <circle cx="232" cy="554" r="6" fill="var(--bm-signal)"></circle>
-          <text x="246" y="562" class="lab soft small">heard in both countries</text>
+          <text x="246" y="562" class="lab soft small">{tx('heard in both countries')}</text>
         </g>
         <g data-l="lab9" class="off">
           <text x="752" y="232" text-anchor="end" class="num sig" font-size="96">9</text>
-          <text x="752" y="266" text-anchor="end" class="lab">crossed the border</text>
+          <text x="752" y="266" text-anchor="end" class="lab">{tx('crossed the border')}</text>
         </g>
       </g>
 
@@ -456,7 +466,7 @@ const whyStations = [
       <!-- 7 · the proposed corridor -->
       <g data-l="lab984" class="off">
         <text x="752" y="210" text-anchor="end" class="num ink" font-size="76">984 km</text>
-        <text x="752" y="246" text-anchor="end" class="lab ink">proposed protected corridor</text>
+        <text x="752" y="246" text-anchor="end" class="lab ink">{tx('proposed protected corridor')}</text>
       </g>
 
       <!-- 8 · what people can do (over the wetland scene) -->
@@ -499,7 +509,7 @@ const whyStations = [
         <g data-l="why-link" class="off">
           <path d="M196,240 H604" stroke="var(--bm-signal)" stroke-width="2" stroke-dasharray="4 8" stroke-linecap="round"></path>
           <rect x="318" y="218" width="164" height="44" rx="22" fill="var(--bm-deep)" stroke="var(--bm-signal)" stroke-width="1.5"></rect>
-          <text x="400" y="248" text-anchor="middle" class="lab">same voice</text>
+          <text x="400" y="248" text-anchor="middle" class="lab">{tx('same voice')}</text>
         </g>
       </g>
     </svg>

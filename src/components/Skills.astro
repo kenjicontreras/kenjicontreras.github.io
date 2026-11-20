@@ -1,5 +1,13 @@
 ---
-import { skills } from '../data/profile';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
+const { skills } = dataFor(lang);
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
@@ -8,7 +16,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 <section class="block" id="skills" aria-labelledby="skills-title">
   <div class="wrap">
     <div class="block-head">
-      <h2 id="skills-title">What I do</h2>
+      <h2 id="skills-title">{t.skills.title}</h2>
     </div>
 
     <ul class="index">
@@ -19,7 +27,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             <div class="body">
               <p class="line">{s.line}</p>
               {s.tools && (
-                <ul class="tools" aria-label="Tools">
+                <ul class="tools" aria-label={t.skills.tools}>
                   {s.tools.map((t) => (
                     <li>
                       {t.icon && <img src={base + t.icon} alt="" width="24" height="24" loading="lazy" decoding="async" />}

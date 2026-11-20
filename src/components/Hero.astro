@@ -1,6 +1,14 @@
 ---
 import { Picture } from 'astro:assets';
-import { profile, partners } from '../data/profile';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
+
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang);
+const { profile, partners } = dataFor(lang);
 const cvHref = import.meta.env.BASE_URL.replace(/\/$/, '') + '/' + profile.cv;
 import headshot from '../assets/kenji-headshot.jpg';
 ---
@@ -29,16 +37,16 @@ import headshot from '../assets/kenji-headshot.jpg';
       <p class="intro">{profile.intro}</p>
       <div class="cta">
         <div class="actions">
-          <a href="#contact" class="btn btn-solid">Discuss your project</a>
-          <a href="#work" class="btn btn-line">See the projects</a>
+          <a href="#contact" class="btn btn-solid">{t.hero.discuss}</a>
+          <a href="#work" class="btn btn-line">{t.hero.see}</a>
         </div>
         <p class="avail"><span class="dot" aria-hidden="true"></span>{profile.availability}</p>
-        {profile.cv && <a class="cv draw" href={cvHref} download>Download my CV (PDF)</a>}
+        {profile.cv && <a class="cv draw" href={cvHref} download>{t.hero.cv}</a>}
       </div>
     </div>
 
     <div class="trust">
-      <p>Research and work with</p>
+      <p>{t.hero.trust}</p>
       <ul>{partners.map((p) => <li>{p}</li>)}</ul>
     </div>
   </div>

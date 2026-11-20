@@ -13,26 +13,44 @@ import { content as drone } from '../../animations/drone-manatees/content';
 import { content as spectra } from '../../animations/vector-spectra/content';
 import { content as watermelon } from '../../animations/watermelon-varieties/content';
 import { content as survey } from '../../animations/survey-nlp/content';
-import { projects } from '../data/work';
+import { content as binationalEs } from '../../animations/binational-manatees/content.es';
+import { content as droneEs } from '../../animations/drone-manatees/content.es';
+import { content as spectraEs } from '../../animations/vector-spectra/content.es';
+import { content as watermelonEs } from '../../animations/watermelon-varieties/content.es';
+import { content as surveyEs } from '../../animations/survey-nlp/content.es';
+import { t as tr, type Lang } from '../i18n/ui';
+import { dataFor } from '../i18n/data';
 
+interface Props {
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const t = tr(lang).work;
+const { projects } = dataFor(lang);
+
+const es = lang === 'es';
 const stories = {
-  'binational-manatees': { content: binational, Stage: BinationalStage },
-  'drone-manatees': { content: drone, Stage: DroneStage },
-  'vector-spectra': { content: spectra, Stage: SpectraStage },
-  'watermelon-varieties': { content: watermelon, Stage: WatermelonStage },
-  'survey-nlp': { content: survey, Stage: SurveyStage },
+  'binational-manatees': { content: es ? binationalEs : binational, Stage: BinationalStage },
+  'drone-manatees': { content: es ? droneEs : drone, Stage: DroneStage },
+  'vector-spectra': { content: es ? spectraEs : spectra, Stage: SpectraStage },
+  'watermelon-varieties': { content: es ? watermelonEs : watermelon, Stage: WatermelonStage },
+  'survey-nlp': { content: es ? surveyEs : survey, Stage: SurveyStage },
 };
+// Each scene's timeline is driven by step index, so both languages need the same steps.
+for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, spectraEs], [watermelon, watermelonEs], [survey, surveyEs]]) {
+  if (en.steps.length !== sp.steps.length) throw new Error(`${en.id}: ${en.steps.length} English steps but ${sp.steps.length} Spanish`);
+}
 ---
 
 <section class="block work" id="work" aria-labelledby="work-title" data-tabs>
   <div class="wrap block-head">
-    <h2 id="work-title">Projects, step by step</h2>
-    <p>Five projects, from field research to tools for business. Pick one and scroll to see how it works, step by step.</p>
+    <h2 id="work-title">{t.title}</h2>
+    <p>{t.lede}</p>
   </div>
 
   <div class="bar" data-bar>
     <div class="wrap">
-      <div class="tablist" role="tablist" aria-label="Projects">
+      <div class="tablist" role="tablist" aria-label={t.tablist}>
         {
           projects.map((p, i) => (
             <button
@@ -62,8 +80,8 @@ const stories = {
         const { content, Stage } = stories[p.id];
         return (
           <div class="panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} hidden={i !== 0}>
-            <ScrollStory content={content} scene={p.scene}>
-              <Stage slot="stage" />
+            <ScrollStory content={content} scene={p.scene} lang={lang}>
+              <Stage slot="stage" lang={lang} />
             </ScrollStory>
           </div>
         );
@@ -73,7 +91,7 @@ const stories = {
 
   <div class="wrap next">
     <button type="button" class="btn btn-line" data-next>
-      <span class="next-lead">Next project:</span> <span class="next-title" data-next-label>{projects[1].tab}</span>
+      <span class="next-lead">{t.next}</span> <span class="next-title" data-next-label>{projects[1].tab}</span>
       <span class="arrow" aria-hidden="true">→</span>
     </button>
   </div>
@@ -429,6 +447,15 @@ const stories = {
     .tab {
       font-size: 0.92rem;
       padding-inline: 0.75rem;
+    }
+  }
+  /* Spanish titles run longer; on the narrowest five-column widths they step down a size. */
+  @media (min-width: 901px) and (max-width: 1023px) {
+    .tab:lang(es) {
+      font-size: 0.84rem;
+    }
+    .bar.is-stuck .t:lang(es) {
+      font-size: 0.74rem;
     }
   }
   .tablist::-webkit-scrollbar {

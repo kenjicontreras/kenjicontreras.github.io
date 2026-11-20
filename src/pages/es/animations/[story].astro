@@ -1,0 +1,64 @@
+---
+// Spanish preview pages for the five scroll stories (/es/animations/<id>), used
+// to check the Spanish labels and text step by step. A review surface, like the
+// English previews in src/pages/animations; not indexed.
+import Base from '../../../layouts/Base.astro';
+import Header from '../../../components/Header.astro';
+import ScrollStory from '../../../../animations/_shared/ScrollStory.astro';
+import BinationalStage from '../../../../animations/binational-manatees/Stage.astro';
+import DroneStage from '../../../../animations/drone-manatees/Stage.astro';
+import SpectraStage from '../../../../animations/vector-spectra/Stage.astro';
+import WatermelonStage from '../../../../animations/watermelon-varieties/Stage.astro';
+import SurveyStage from '../../../../animations/survey-nlp/Stage.astro';
+import { content as binational } from '../../../../animations/binational-manatees/content.es';
+import { content as drone } from '../../../../animations/drone-manatees/content.es';
+import { content as spectra } from '../../../../animations/vector-spectra/content.es';
+import { content as watermelon } from '../../../../animations/watermelon-varieties/content.es';
+import { content as survey } from '../../../../animations/survey-nlp/content.es';
+import { projects } from '../../../data/work';
+
+const stories = {
+  'binational-manatees': { content: binational, Stage: BinationalStage },
+  'drone-manatees': { content: drone, Stage: DroneStage },
+  'vector-spectra': { content: spectra, Stage: SpectraStage },
+  'watermelon-varieties': { content: watermelon, Stage: WatermelonStage },
+  'survey-nlp': { content: survey, Stage: SurveyStage },
+};
+
+export function getStaticPaths() {
+  return projects.map((p) => ({ params: { story: p.id }, props: { scene: p.scene } }));
+}
+const id = Astro.params.story as keyof typeof stories;
+const { scene } = Astro.props;
+const { content, Stage } = stories[id];
+---
+
+<Base title={`Vista previa: ${content.title}`} description="Página de revisión de la animación." lang="es">
+  <meta name="robots" content="noindex" slot="head" />
+  <Header lang="es" />
+  <main id="main" class="preview">
+    <div class="wrap note">
+      <p><strong>Vista previa.</strong> Desplácese para ver la historia. La misma historia aparece como pestaña en la página principal.</p>
+    </div>
+    <ScrollStory content={content} scene={scene} lang="es">
+      <Stage slot="stage" lang="es" />
+    </ScrollStory>
+    <div class="wrap after"><p>Fin de la historia.</p></div>
+  </main>
+</Base>
+
+<style>
+  .preview {
+    padding-top: var(--header-h);
+  }
+  .note {
+    padding-block: 0.75rem 0;
+    color: var(--slate);
+    font-size: var(--step--1);
+  }
+  .after {
+    padding-block: 3rem 40vh;
+    color: var(--slate);
+    border-top: 1px solid var(--rule);
+  }
+</style>

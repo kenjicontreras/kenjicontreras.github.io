@@ -7,6 +7,15 @@ import './tokens.css';
 import species from './data/species.json';
 import spectra from './data/spectra.json';
 import embedding from './data/embedding.json';
+import { translator, type Lang } from '../_shared/labels';
+import { es as labelsEs } from './labels';
+
+interface Props {
+  /** Page language; only the drawn labels change. */
+  lang?: Lang;
+}
+const { lang = 'en' } = Astro.props;
+const tx = translator(lang, labelsEs);
 
 const r1 = (v: number) => Math.round(v * 10) / 10;
 type P = [number, number];
@@ -23,8 +32,8 @@ const symbols = ['mosquito', 'tick', 'bench-back', 'bench-front', 'mosquito-mini
 
 // ── step 1 and 8: the two animals ─────────────────────────────────────────
 const animals = [
-  { id: 'm', cx: 232, name: 'Anopheles mosquito', disease: 'malaria', chip: 120, trace: spectra.cards.anchor },
-  { id: 't', cx: 620, name: 'Amblyomma tick', disease: 'spotted fever', chip: 184, trace: spectra.cards.negative },
+  { id: 'm', cx: 232, name: tx('Anopheles mosquito'), disease: 'malaria', chip: 120, trace: spectra.cards.anchor },
+  { id: 't', cx: 620, name: tx('Amblyomma tick'), disease: tx('spotted fever'), chip: lang === 'es' ? 214 : 184, trace: spectra.cards.negative },
 ];
 
 // ── step 3: molecules of three sizes fly down the tube; light ones are fastest
@@ -60,9 +69,9 @@ const tMin = tick.find((t) => t.n === Math.min(...tick.map((x) => x.n)))!;
 
 // ── step 5: three spectra, one network, three points ──────────────────────
 const rows = [
-  { id: 'anchor', label: 'reference', cy: 150, d: spectra.cards.anchor },
-  { id: 'positive', label: 'same species', cy: 320, d: spectra.cards.positive },
-  { id: 'negative', label: 'another species', cy: 490, d: spectra.cards.negative },
+  { id: 'anchor', label: tx('reference'), cy: 150, d: spectra.cards.anchor },
+  { id: 'positive', label: tx('same species'), cy: 320, d: spectra.cards.positive },
+  { id: 'negative', label: tx('another species'), cy: 490, d: spectra.cards.negative },
 ];
 const anchor: P = [600, 320];
 const pos = { from: [706, 176] as P, to: [636, 284] as P };
@@ -124,7 +133,7 @@ const neighbours = dots
             <rect x={a.cx - 112} y="424" width="224" height="84" rx="8" fill="var(--vs-bench)"></rect>
             <path d={a.trace} transform={`translate(${a.cx - 90},434)`} fill="none" stroke="var(--vs-trace)" stroke-width="1.6" stroke-linejoin="round"></path>
             <g style="color: var(--teal)"><use href="#vs-icon-check" x={a.cx - 104} y="522" width="40" height="40"></use></g>
-            <text x={a.cx - 56} y="551" class="lab ink strong">identified</text>
+            <text x={a.cx - 56} y="551" class="lab ink strong">{tx('identified')}</text>
           </g>
         ))}
       </g>
@@ -140,7 +149,7 @@ const neighbours = dots
         <circle cx="400" cy="270" r="212" fill="none" stroke="var(--ink)" stroke-width="7"></circle>
         <text data-l="lens-item" class="off num ink" x="300" y="372" text-anchor="middle" font-size="64">?</text>
         <text data-l="lens-item" class="off num ink" x="506" y="372" text-anchor="middle" font-size="64">?</text>
-        <text data-l="lens-item" class="off lab ink" x="40" y="574">same shape, different species</text>
+        <text data-l="lens-item" class="off lab ink" x="40" y="574">{tx('same shape, different species')}</text>
       </g>
 
       <rect data-l="dark" class="off" width="800" height="600" fill="var(--vs-bench)"></rect>
@@ -148,18 +157,18 @@ const neighbours = dots
       <!-- 3 · the instrument: laser, flight tube, detector, spectrum -->
       <g data-l="bench" class="off">
         <use href="#vs-bench-back" x="0" y="0" width="800" height="400"></use>
-        <text x="174" y="82" class="lab soft small">laser</text>
-        <text x="40" y="372" class="lab soft small">sample from a leg</text>
+        <text x="174" y="82" class="lab soft small">{tx('laser')}</text>
+        <text x="40" y="372" class="lab soft small">{tx('sample from a leg')}</text>
         <path data-l="beam" class="off" d="M110,98 L128,262" stroke="var(--vs-laser)" stroke-width="4" stroke-linecap="round"></path>
         <circle data-l="spark" class="off" cx="128" cy="264" r="13" fill="var(--vs-laser)" opacity="0.9"></circle>
-        <text x={tube.x + tube.w / 2} y="222" text-anchor="middle" class="lab soft small">flight tube</text>
+        <text x={tube.x + tube.w / 2} y="222" text-anchor="middle" class="lab soft small">{tx('flight tube')}</text>
         <text x="760" y="206" text-anchor="end" class="lab soft small">detector</text>
         {ions.map((ion) => (
           <g data-l="ion" class="off" data-size={ion.size} data-lag={ion.lag} set:html={molecule(236, ion.y, ion.size)}></g>
         ))}
         <g data-l="sorted" class="off" set:html={sorted.map(([x, y, k]) => molecule(x, y, k)).join('')}></g>
         <use href="#vs-bench-front" x="0" y="0" width="800" height="400"></use>
-        <text data-l="first" class="off lab" x={tube.x + tube.w / 2} y="340" text-anchor="middle">light molecules arrive first</text>
+        <text data-l="first" class="off lab" x={tube.x + tube.w / 2} y="340" text-anchor="middle">{tx('light molecules arrive first')}</text>
         <g stroke="var(--vs-panel-2)" stroke-linecap="round">
           {ticks.map((x) => <path d={`M${x},420 V${baseY}`} stroke-width="1" stroke-dasharray="2 6" opacity="0.55"></path>)}
           <path d={`M250,${baseY} H736`} stroke-width="2"></path>
@@ -172,26 +181,26 @@ const neighbours = dots
             <path d={spectra.main.d} fill="none" stroke="var(--vs-trace)" stroke-width="1.8" stroke-linejoin="round"></path>
           </g>
         </g>
-        <text data-l="axis" class="off lab soft small" x="736" y="590" text-anchor="end">heavier molecules →</text>
-        <text data-l="axis" class="off lab soft small" x="40" y="486">the spectrum</text>
+        <text data-l="axis" class="off lab soft small" x="736" y="590" text-anchor="end">{tx('heavier molecules →')}</text>
+        <text data-l="axis" class="off lab soft small" x="40" y="486">{tx('the spectrum')}</text>
       </g>
 
       <!-- 4 · how many spectra each species has, on one scale -->
       <g data-l="data" class="off">
         <text data-l="n-mosq" x="40" y="86" class="num" font-size="52">0</text>
-        <text x="42" y="116" class="lab soft small">spectra · 12 mosquito species</text>
+        <text x="42" y="116" class="lab soft small">{tx('spectra · 12 mosquito species')}</text>
         <g style="color: var(--vs-mosq)"><use href="#vs-mosquito-mini" x="318" y="40" width="66" height="44"></use></g>
         {mosq.map((s) => <rect data-l="bar" data-w={s.w} x="40" y={s.y} width="0" height="22" rx="3" fill="var(--vs-mosq)"></rect>)}
         <text data-l="bar-note" class="off lab small" x={48 + mMax.w} y={mMax.y + 19}>{mMax.n}</text>
         <text data-l="bar-note" class="off lab small" x={48 + mMin.w} y={mMin.y + 19}>{mMin.n}</text>
 
         <text data-l="n-tick" x="430" y="86" class="num" font-size="52">0</text>
-        <text x="432" y="116" class="lab soft small">spectra · 18 tick species</text>
+        <text x="432" y="116" class="lab soft small">{tx('spectra · 18 tick species')}</text>
         <g style="color: var(--vs-tick)"><use href="#vs-tick-mini" x="712" y="38" width="48" height="48"></use></g>
         {tick.map((s) => <rect data-l="bar" data-w={s.w} x="430" y={s.y} width="0" height="15" rx="2.5" fill="var(--vs-tick)"></rect>)}
         <text data-l="bar-note" class="off lab small" x={438 + tMax.w} y={tMax.y + 16}>{tMax.n}</text>
-        <text data-l="bar-note" class="off lab small" x={438 + tMin.w} y={tMin.y + 16}>only {tMin.n}</text>
-        <text data-l="bar-note" class="off lab soft small" x="40" y="582">one bar per species: how many spectra it has</text>
+        <text data-l="bar-note" class="off lab small" x={438 + tMin.w} y={tMin.y + 16}>{tx('only')} {tMin.n}</text>
+        <text data-l="bar-note" class="off lab soft small" x="40" y="582">{tx('one bar per species: how many spectra it has')}</text>
       </g>
 
       <!-- 5 · three spectra, one network, three points -->
@@ -206,25 +215,25 @@ const neighbours = dots
           </g>
         ))}
         <path data-l="same-net" class="off" d="M339,206 V266 M339,376 V436" stroke="var(--vs-steel)" stroke-width="2" stroke-dasharray="3 6" stroke-linecap="round"></path>
-        <text data-l="same-net" class="off lab small" x="40" y="584">one network reads all three</text>
+        <text data-l="same-net" class="off lab small" x="40" y="584">{tx('one network reads all three')}</text>
         <g data-l="space" class="off">
           <rect x="440" y="98" width="320" height="444" rx="8" fill="var(--vs-panel)"></rect>
           <circle data-l="margin" class="off" cx={anchor[0]} cy={anchor[1]} r="92" fill="none" stroke="var(--vs-on-2)" stroke-width="1.5" stroke-dasharray="4 7"></circle>
           <line data-l="link-pos" x1={anchor[0]} y1={anchor[1]} x2={pos.from[0]} y2={pos.from[1]} stroke="var(--vs-on)" stroke-width="2" data-to={pos.to.join(',')}></line>
           <line data-l="link-neg" x1={anchor[0]} y1={anchor[1]} x2={neg.from[0]} y2={neg.from[1]} stroke="var(--vs-on-2)" stroke-width="2" stroke-dasharray="2 6" data-to={neg.to.join(',')}></line>
           <circle cx={anchor[0]} cy={anchor[1]} r="12" fill="var(--vs-mosq)" stroke="var(--vs-on)" stroke-width="3"></circle>
-          <text x={anchor[0] - 22} y={anchor[1] + 8} text-anchor="end" class="lab small">reference</text>
+          <text x={anchor[0] - 22} y={anchor[1] + 8} text-anchor="end" class="lab small">{tx('reference')}</text>
           <g data-l="pt-pos" data-from={pos.from.join(',')} data-to={pos.to.join(',')}>
             <circle r="11" fill="var(--vs-mosq)"></circle>
-            <text x="18" y="-8" class="lab small">same</text>
+            <text x="18" y="-8" class="lab small">{tx('same')}</text>
           </g>
           <g data-l="space-note" class="off">
-            <text x="460" y="506" class="lab soft small">same species: pulled close</text>
-            <text x="460" y="532" class="lab soft small">other species: pushed away</text>
+            <text x="460" y="506" class="lab soft small">{tx('same species: pulled close')}</text>
+            <text x="460" y="532" class="lab soft small">{tx('other species: pushed away')}</text>
           </g>
           <g data-l="pt-neg" data-from={neg.from.join(',')} data-to={neg.to.join(',')}>
             <circle r="10" fill="var(--vs-panel)" stroke="var(--vs-mosq)" stroke-width="3.5"></circle>
-            <text x="18" y="8" class="lab small">other</text>
+            <text x="18" y="8" class="lab small">{tx('other')}</text>
           </g>
         </g>
       </g>
@@ -234,20 +243,20 @@ const neighbours = dots
         <rect x={panels.m.x} y={panels.m.y} width={panels.m.w} height={panels.m.h} rx="8" fill="var(--vs-panel)"></rect>
         <rect x={panels.t.x} y={panels.t.y} width={panels.t.w} height={panels.t.h} rx="8" fill="var(--vs-panel)"></rect>
         <g style="color: var(--vs-mosq)"><use href="#vs-mosquito-mini" x="40" y="38" width="66" height="44"></use></g>
-        <text x="116" y="76" class="lab">mosquitoes</text>
+        <text x="116" y="76" class="lab">{tx('mosquitoes')}</text>
         <g style="color: var(--vs-tick)"><use href="#vs-tick-mini" x="410" y="36" width="48" height="48"></use></g>
-        <text x="468" y="76" class="lab">ticks</text>
+        <text x="468" y="76" class="lab">{tx('ticks')}</text>
         {isles.map((i) => <circle data-l="isle" class="off" cx={i.x} cy={i.y} r={i.r} fill="none" stroke="var(--vs-on-2)" stroke-width="1.2" opacity="0.7"></circle>)}
         {dots.map((d) => (
           <circle data-l="pt" class="off" data-a={d.a.join(',')} data-b={d.b.join(',')} r="3.4" fill={d.f === 'm' ? 'var(--vs-mosq)' : 'var(--vs-tick)'}></circle>
         ))}
-        <text data-l="cap" class="off lab soft" x="40" y="520">12 species, 826 spectra</text>
-        <text data-l="cap" class="off lab soft" x="410" y="520">18 species, 310 spectra</text>
+        <text data-l="cap" class="off lab soft" x="40" y="520">{tx('12 species, 826 spectra')}</text>
+        <text data-l="cap" class="off lab soft" x="410" y="520">{tx('18 species, 310 spectra')}</text>
         <g data-l="cap" class="off">
           <circle cx="46" cy="560" r="4" fill="var(--vs-mosq)"></circle>
-          <text x="60" y="568" class="lab soft small">one spectrum</text>
+          <text x="60" y="568" class="lab soft small">{tx('one spectrum')}</text>
           <circle cx="232" cy="560" r="11" fill="none" stroke="var(--vs-on-2)" stroke-width="1.2"></circle>
-          <text x="252" y="568" class="lab soft small">one species</text>
+          <text x="252" y="568" class="lab soft small">{tx('one species')}</text>
         </g>
         <!-- 7 · a new spectrum is named after its neighbours -->
         {neighbours.map((n) => <line data-l="nn" class="off" x1={landing[0]} y1={landing[1]} x2={n.b[0]} y2={n.b[1]} stroke="var(--vs-on)" stroke-width="1.6"></line>)}
@@ -261,17 +270,17 @@ const neighbours = dots
         </g>
         <g data-l="new-key" class="off">
           <circle cx="47" cy="496" r="7" fill="var(--vs-on)"></circle>
-          <text x="62" y="504" class="lab soft small">a new spectrum, named after its neighbours</text>
+          <text x="62" y="504" class="lab soft small">{tx('a new spectrum, named after its neighbours')}</text>
         </g>
         <g data-l="acc" class="off">
           <text x="40" y="560" class="num" font-size="50">99%</text>
-          <text x="178" y="536" class="lab soft small">of mosquito spectra</text>
-          <text x="178" y="562" class="lab soft small">named correctly</text>
+          <text x="178" y="536" class="lab soft small">{tx('of mosquito spectra')}</text>
+          <text x="178" y="562" class="lab soft small">{tx('named correctly')}</text>
         </g>
         <g data-l="acc" class="off">
           <text x="410" y="560" class="num" font-size="50">93%</text>
-          <text x="548" y="536" class="lab soft small">of tick spectra</text>
-          <text x="548" y="562" class="lab soft small">named correctly</text>
+          <text x="548" y="536" class="lab soft small">{tx('of tick spectra')}</text>
+          <text x="548" y="562" class="lab soft small">{tx('named correctly')}</text>
         </g>
       </g>
     </svg>

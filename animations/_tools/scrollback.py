@@ -9,7 +9,8 @@ after scrolling back was not restored by the timeline.
 import sys, asyncio, json
 from playwright.async_api import async_playwright
 story, layers = sys.argv[1], sys.argv[2].split(',')
-URL = f'http://localhost:4321/animations/{story}'
+import os
+URL = f"http://localhost:4321{'/es' if os.environ.get('LANG_PAGE') == 'es' else ''}/animations/{story}"
 STATE = """(layers) => { const v=(n)=>{const e=document.querySelector(`[data-l="${n}"]`); if(!e) return null; const c=getComputedStyle(e); return c.visibility!=='hidden' && +c.opacity>0.05};
  const o={step:document.querySelector('[data-scene]').dataset.step}; layers.forEach(n=>o[n]=v(n)); return o }"""
 async def goto(page, i, f):

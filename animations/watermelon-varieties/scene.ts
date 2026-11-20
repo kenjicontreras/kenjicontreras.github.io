@@ -35,33 +35,56 @@ const scene: Scene = (ctx) =>
       .to(one('sq-key'), { autoAlpha: 1, duration: 0.1 }, at(3, 0.4))
       .fromTo(one('pixel'), { scale: 0.2, svgOrigin: '635 265' }, { autoAlpha: 1, scale: 1, duration: 0.2 }, at(3, 0.54));
 
-    // ── 4 · transfer learning: a photo goes through a frozen network and a small trained part
-    const parts = all('t-part');
+    // ── 4 · transfer learning
+    // (a) everyday photos go into the big network, which forms its detectors and is then locked;
+    // (b) a watermelon photo goes in and lights up the detectors that match it;
+    // (c) the small trained part weighs the last detectors and names the variety.
+    const every = all('t-every');
+    const tiles = all('t-tile');
+    const act = (i: number) => Number(tiles[i].dataset.act);
+    const links = all('t-link');
     const outs = all('t-out');
-    const chips = all('t-chip');
-    const kept = stage.querySelector('[data-kept]')!;
     tl.to(one('night'), { autoAlpha: 1, duration: 0.14 }, at(4, 0))
-      .to(one('transfer'), { autoAlpha: 1, duration: 0.1 }, at(4, 0.06))
-      .fromTo(parts, { x: -12 }, { autoAlpha: 1, x: 0, duration: 0.12, stagger: 0.1 }, at(4, 0.08))
-      .to(one('t-pulse'), { autoAlpha: 1, duration: 0.02 }, at(4, 0.44))
-      .to(one('t-pulse'), { x: 490, duration: 0.18, ease: 'power1.inOut' }, at(4, 0.44))
-      .to(one('t-pulse'), { autoAlpha: 0, duration: 0.02 }, at(4, 0.62))
-      .fromTo(outs[0], { scale: 1 }, { scale: 1.12, transformOrigin: '0% 50%', duration: 0.06 }, at(4, 0.62))
-      .to(chips, { autoAlpha: 1, duration: 0.08, stagger: 0.06 }, at(4, 0.66))
-      .to(kept, { fill: token('--wv-panel-2'), stroke: token('--wv-on'), duration: 0.08 }, at(4, 0.86))
-      .to(one('t-kept'), { autoAlpha: 1, duration: 0.08 }, at(4, 0.86));
+      .to(one('transfer'), { autoAlpha: 1, duration: 0.1 }, at(4, 0.04))
+      .fromTo(every, { x: -10 }, { autoAlpha: 1, x: 0, duration: 0.06, stagger: 0.03 }, at(4, 0.06))
+      .to(one('t-every-lab'), { autoAlpha: 1, duration: 0.06 }, at(4, 0.08))
+      .to(one('t-block'), { autoAlpha: 1, duration: 0.08 }, at(4, 0.1))
+      .to(every, { x: 120, autoAlpha: 0, duration: 0.1, stagger: 0.04, ease: 'power1.in' }, at(4, 0.18))
+      .fromTo(tiles, { scale: 0.4, transformOrigin: '50% 50%' }, { autoAlpha: 1, scale: 1, duration: 0.06, stagger: 0.012 }, at(4, 0.2))
+      .to(all('t-col'), { autoAlpha: 1, duration: 0.06, stagger: 0.03 }, at(4, 0.28))
+      .to(one('t-lock'), { autoAlpha: 1, duration: 0.06 }, at(4, 0.34))
+      .to(one('t-every-lab'), { autoAlpha: 0, duration: 0.05 }, at(4, 0.38))
+      .to(tiles, { opacity: 0.3, duration: 0.06 }, at(4, 0.4))
+      .fromTo(one('t-photo'), { x: -10 }, { autoAlpha: 1, x: 0, duration: 0.06 }, at(4, 0.42))
+      .to(one('t-pulse'), { autoAlpha: 1, duration: 0.02 }, at(4, 0.48))
+      .to(one('t-pulse'), { x: 30, duration: 0.06, ease: 'power1.inOut' }, at(4, 0.48))
+      .to(one('t-pulse'), { autoAlpha: 0, duration: 0.02 }, at(4, 0.54))
+      .to(tiles, { opacity: (i: number) => act(i), duration: 0.06, stagger: (i: number) => Number(tiles[i].dataset.col) * 0.04 }, at(4, 0.54))
+      .to(one('t-head'), { autoAlpha: 1, duration: 0.08 }, at(4, 0.62))
+      .fromTo(links, { opacity: 0 }, { autoAlpha: 1, opacity: (i: number) => Number(links[i].dataset.w), duration: 0.08, stagger: 0.02 }, at(4, 0.66))
+      .to(one('t-key'), { autoAlpha: 1, duration: 0.06 }, at(4, 0.58))
+      .to(outs[0], { opacity: 1, scale: 1.12, transformOrigin: '0% 50%', duration: 0.06 }, at(4, 0.76));
 
-    // ── 5 · metric learning: the test photos gather into three groups
+    // ── 5 · metric learning
+    // (a) one training round: a photo of the same variety is pulled closer, one of another pushed away;
+    // (b) after many rounds the test photos sit in three groups;
+    // (c) a new photo takes the name of its nearest neighbours.
     const pts = all('m-pt');
     const wrong = pts.filter((p) => p.dataset.wrong);
     gsap.set(pts, { x: (i) => xy(pts[i], 'a')[0], y: (i) => xy(pts[i], 'a')[1] });
     tl.to(one('transfer'), { autoAlpha: 0, duration: 0.12 }, at(5, 0))
       .to(one('metric'), { autoAlpha: 1, duration: 0.1 }, at(5, 0.06))
-      .to(pts, { autoAlpha: 1, duration: 0.04, stagger: { amount: 0.14, from: 'random' } }, at(5, 0.1))
-      .to(pts, { x: (i) => xy(pts[i], 'b')[0], y: (i) => xy(pts[i], 'b')[1], duration: 0.3, ease: 'power2.inOut' }, at(5, 0.34))
-      .to(all('m-ring'), { autoAlpha: 1, duration: 0.1, stagger: 0.05 }, at(5, 0.6))
-      .to(wrong, { stroke: token('--wv-on'), attr: { 'stroke-width': 3 }, duration: 0.08 }, at(5, 0.74))
-      .to(one('m-legend'), { autoAlpha: 1, duration: 0.1 }, at(5, 0.74));
+      .fromTo(one('m-trip'), { y: 10 }, { autoAlpha: 1, y: 0, duration: 0.08 }, at(5, 0.08))
+      .to(one('m-same'), { x: 96, y: 80, duration: 0.16, ease: 'power2.inOut' }, at(5, 0.16))
+      .to(one('m-other'), { x: 130, duration: 0.16, ease: 'power2.inOut' }, at(5, 0.16))
+      .to(all('m-push'), { autoAlpha: 1, duration: 0.06, stagger: 0.04 }, at(5, 0.22))
+      .to(one('m-trip'), { autoAlpha: 0, duration: 0.06 }, at(5, 0.38))
+      .to(pts, { autoAlpha: 1, duration: 0.04, stagger: { amount: 0.08, from: 'random' } }, at(5, 0.42))
+      .to(pts, { x: (i) => xy(pts[i], 'b')[0], y: (i) => xy(pts[i], 'b')[1], duration: 0.2, ease: 'power2.inOut' }, at(5, 0.5))
+      .to(all('m-ring'), { autoAlpha: 1, duration: 0.08, stagger: 0.04 }, at(5, 0.66))
+      .to(wrong, { stroke: token('--wv-on'), attr: { 'stroke-width': 3 }, duration: 0.06 }, at(5, 0.72))
+      .to(one('m-legend'), { autoAlpha: 1, duration: 0.08 }, at(5, 0.72))
+      .fromTo(one('m-new'), { scale: 0.6, svgOrigin: '166 178' }, { autoAlpha: 1, scale: 1, duration: 0.08 }, at(5, 0.8));
 
     // ── 6 · the result: per variety, for both methods
     const bars = all('r-bar');

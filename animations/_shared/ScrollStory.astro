@@ -4,13 +4,17 @@
 // story (slot "stage"); its animation is the scene registered under `scene`
 // in src/scenes/index.ts and is loaded by src/scripts/motion.ts.
 import type { StoryContent } from './types';
+import { t as tr, type Lang } from '../../src/i18n/ui';
 
 interface Props {
   content: StoryContent;
   /** Key in src/scenes/index.ts. */
   scene: string;
+  /** Language of the interface words around the story (the content is already in it). */
+  lang?: Lang;
 }
-const { content: c, scene } = Astro.props;
+const { content: c, scene, lang = 'en' } = Astro.props;
+const t = tr(lang).story;
 const total = c.steps.length;
 ---
 
@@ -71,7 +75,7 @@ const total = c.steps.length;
               )}
               {s.hood && (
                 <p class="hood">
-                  <span>Under the hood:</span> {s.hood}
+                  <span>{t.hood}</span> {s.hood}
                 </p>
               )}
             </li>
@@ -81,7 +85,7 @@ const total = c.steps.length;
     </div>
 
     <footer class="foot">
-      <ul class="chips" aria-label="Tools used">{c.stack.map((s) => <li>{s}</li>)}</ul>
+      <ul class="chips" aria-label={t.tools}>{c.stack.map((s) => <li>{s}</li>)}</ul>
       {
         c.source && (
           <a class="source" href={c.source.href} target="_blank" rel="noopener">
@@ -93,14 +97,14 @@ const total = c.steps.length;
       {
         c.related && (
           <div class="related">
-            <p class="related-head">Related papers</p>
+            <p class="related-head">{t.related}</p>
             <ul>
               {c.related.map((r) => (
                 <li>
                   <a href={r.href} target="_blank" rel="noopener">{r.title}</a>
                   <span>
                     {r.authors}, {r.venue}
-                    {r.lead && <em class="lead">Lead author</em>}
+                    {r.lead && <em class="lead">{t.lead}</em>}
                   </span>
                 </li>
               ))}
