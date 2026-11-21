@@ -8,7 +8,7 @@ export const profile = {
   location: 'Panama City, Panama',
   headline: 'AI for data that’s hard to work with.',
   intro:
-    'I turn messy data into clear answers and build AI tools that automate repetitive work. Over five years of applied research, with methods published in peer-reviewed journals, plus industry experience adapting text-analysis algorithms to Spanish-language survey data.',
+    'I turn messy data into clear answers and build AI tools that automate repetitive work. Over five years of applied research, with methods published in peer-reviewed journals, plus industry experience building AI tools and analytics for survey research.',
   availability: 'Taking projects in data science, AI tools and workflow automation. Remote, in English or Spanish.',
   email: 'kcinao@gmail.com',
   links: {
