@@ -35,7 +35,7 @@ export type StoryContent = {
   /** Tools, shown as chips. */
   stack: string[];
   /** The publication behind the story. */
-  source?: { label: string; shortLabel?: string; href: string };
+  source?: { label: string; href: string };
   /** Other papers from the same line of work, listed under the story. */
   related?: { authors: string; title: string; venue: string; href: string; lead?: boolean }[];
   /** Attribution for third-party material shown on the stage. */
