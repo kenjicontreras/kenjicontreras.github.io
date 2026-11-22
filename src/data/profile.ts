@@ -146,7 +146,7 @@ export const about: {
     {
       name: 'Mgtr. Ana Patricia Alfonso',
       role: 'Regional Director, CID Gallup',
-      work: 'My director at CID Gallup',
+      work: 'Project manager: survey analysis and AI tools',
       href: 'https://pa.linkedin.com/in/ana-patricia-alfonso-salinas',
       link: 'LinkedIn',
     },

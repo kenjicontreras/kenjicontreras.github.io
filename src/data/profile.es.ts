@@ -54,7 +54,7 @@ const refsEs: Pick<Reference, 'role' | 'work' | 'link'>[] = [
   { role: 'Científico permanente, Smithsonian Tropical Research Institute', work: 'Supervisor de investigación: monitoreo acústico de manatíes', link: 'Perfil en STRI' },
   { role: 'Investigador, Facultad de Ingeniería Eléctrica, UTP', work: 'Supervisor de investigación: monitoreo acústico de manatíes, identificación de vectores de enfermedades', link: 'Perfil en la UTP' },
   { role: 'Investigador, Facultad de Ingeniería de Sistemas Computacionales, UTP', work: 'Supervisor de investigación: clasificación de sandías, identificación de vectores de enfermedades', link: 'Perfil en la UTP' },
-  { role: 'Directora regional, CID Gallup', work: 'Mi directora en CID Gallup', link: 'LinkedIn' },
+  { role: 'Directora regional, CID Gallup', work: 'Gerente de proyectos: análisis de encuestas y herramientas de IA', link: 'LinkedIn' },
   { role: 'Director, Academia de Artes Marciales León', work: 'Enseñanza de artes marciales', link: 'WhatsApp +507 6550-9596' },
 ];
 
