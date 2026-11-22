@@ -2,6 +2,8 @@
 import '@fontsource-variable/archivo/wdth.css';
 import '@fontsource-variable/source-serif-4/index.css';
 import '../styles/global.css';
+import archivo from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import sourceSerif from '@fontsource-variable/source-serif-4/files/source-serif-4-latin-wght-normal.woff2?url';
 import { profile } from '../data/profile';
 import { t as tr, langs, pathFor, type Lang } from '../i18n/ui';
 
@@ -37,6 +39,8 @@ const person = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preload" href={archivo} as="font" type="font/woff2" crossorigin="anonymous" />
+    {pageType && <link rel="preload" href={sourceSerif} as="font" type="font/woff2" crossorigin="anonymous" />}
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -63,6 +67,7 @@ const person = {
     <slot name="head" />
   </head>
   <body>
+    <a href="#main" class="skip">{t.skip}</a>
     <slot />
     <script>
       import '../scripts/motion.ts';

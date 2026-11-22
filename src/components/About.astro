@@ -185,7 +185,7 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
     padding-top: 2rem;
     border-top: 1px solid var(--rule);
     display: grid;
-    grid-template-columns: 1fr 1.3fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     gap: 2rem 3rem;
   }
   .facts h3 {
@@ -216,6 +216,12 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
   .plain span {
     color: var(--slate);
     font-size: 0.95rem;
+  }
+  .plain a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: underline;
   }
   .venues {
     list-style: none;
@@ -252,7 +258,7 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
     padding: 0;
     margin: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
     gap: 1.5rem 3rem;
   }
   .ref-list li {

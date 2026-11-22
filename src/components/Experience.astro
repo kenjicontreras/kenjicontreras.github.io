@@ -113,12 +113,12 @@ const { experience } = dataFor(lang);
     margin-top: 0.3rem;
   }
   .items dd.code {
-    font-size: 0.78rem;
+    font-size: var(--step--1);
     color: var(--slate);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0.02em;
     line-height: 1.4;
-    text-wrap: balance;
+    text-wrap: pretty;
     /* a wrapped line sits indented under its code */
     padding-left: 1em;
     text-indent: -1em;
@@ -146,7 +146,7 @@ const { experience } = dataFor(lang);
   dd {
     margin: 0.15rem 0 0;
     color: var(--slate);
-    font-size: 0.97rem;
+    font-size: 1rem;
     line-height: 1.5;
   }
 

@@ -7,17 +7,20 @@ interface Props {
 }
 const { lang = 'en' } = Astro.props;
 const t = tr(lang);
+const landing = pathFor(lang);
+const onLanding = Astro.url.pathname.replace(/\/$/, '') === landing.replace(/\/$/, '');
+const sectionHref = (id: string) => `${onLanding ? '' : landing}#${id}`;
 ---
 
 <header class="header" data-header>
   <div class="wrap inner">
-    <a href="#top" class="name">{profile.name}</a>
+    <a href={sectionHref('top')} class="name">{profile.name}</a>
     <nav aria-label={t.navLabel}>
-      <a class="draw" href="#skills">{t.nav.skills}</a>
-      <a class="draw" href="#work">{t.nav.work}</a>
-      <a class="draw" href="#experience">{t.nav.experience}</a>
-      <a class="draw" href="#about">{t.nav.about}</a>
-      <a class="draw contact-link" href="#contact">{t.nav.contact}</a>
+      <a class="draw" href={sectionHref('skills')}>{t.nav.skills}</a>
+      <a class="draw" href={sectionHref('work')}>{t.nav.work}</a>
+      <a class="draw" href={sectionHref('experience')}>{t.nav.experience}</a>
+      <a class="draw" href={sectionHref('about')}>{t.nav.about}</a>
+      <a class="draw contact-link" href={sectionHref('contact')}>{t.nav.contact}</a>
       <span class="lang" role="group" aria-label={t.langLabel}>
         {
           langs.map((l) =>
@@ -44,13 +47,13 @@ const t = tr(lang);
     </nav>
   </div>
   <!-- Phones: the sections the header has no room for, in a drop-down panel. -->
-  <div class="mpanel" id="mobile-menu" hidden data-menu>
+  <div class="mpanel" id="mobile-menu" hidden data-menu data-lenis-prevent>
     <nav class="wrap" aria-label={t.navLabel}>
-      <a href="#skills">{t.nav.skills}</a>
-      <a href="#work">{t.nav.work}</a>
-      <a href="#experience">{t.nav.experience}</a>
-      <a href="#about">{t.nav.about}</a>
-      <a href="#contact" class="m-contact">{t.nav.contact}</a>
+      <a href={sectionHref('skills')}>{t.nav.skills}</a>
+      <a href={sectionHref('work')}>{t.nav.work}</a>
+      <a href={sectionHref('experience')}>{t.nav.experience}</a>
+      <a href={sectionHref('about')}>{t.nav.about}</a>
+      <a href={sectionHref('contact')} class="m-contact">{t.nav.contact}</a>
     </nav>
     <div class="wrap m-lang" role="group" aria-label={t.langLabel}>
       {
@@ -86,6 +89,9 @@ const t = tr(lang);
     // A link closes the menu; the page then scrolls to the section as usual.
     panel.addEventListener('click', (e) => {
       if ((e.target as Element).closest('a')) setOpen(false);
+    });
+    document.addEventListener('focusin', (event) => {
+      if (event.target !== btn && !panel.contains(event.target as Node)) setOpen(false);
     });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !panel.hidden) {
@@ -182,6 +188,8 @@ const t = tr(lang);
   }
   nav .lang a.alt {
     color: var(--slate);
+    min-width: 44px;
+    justify-content: center;
   }
   nav .lang a.alt:hover {
     color: var(--teal);
@@ -234,6 +242,9 @@ const t = tr(lang);
       display: block;
       position: absolute;
       inset: 100% 0 auto;
+      max-height: calc(100dvh - var(--header-h));
+      overflow-y: auto;
+      overscroll-behavior: contain;
       background: var(--paper);
       border-top: 1px solid var(--rule);
       border-bottom: 1px solid var(--rule);

@@ -11,11 +11,11 @@ import { content } from '../../../animations/survey-nlp/content';
 
 <Base title="Preview: survey NLP story" description="Review page for the survey NLP scroll animation.">
   <Header />
-  <main id="main" class="preview">
+  <main id="main" tabindex="-1" class="preview">
     <div class="wrap note">
       <p><strong>Preview.</strong> Scroll to play the story. The same story runs as a tab on the landing page.</p>
     </div>
-    <ScrollStory content={content} scene="surveynlp">
+    <ScrollStory standalone content={content} scene="surveynlp">
       <Stage slot="stage" />
     </ScrollStory>
     <div class="wrap after"><p>End of the story. On the landing page the next project is one tab over.</p></div>

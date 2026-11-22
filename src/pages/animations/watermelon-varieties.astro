@@ -11,11 +11,11 @@ import { content } from '../../../animations/watermelon-varieties/content';
 
 <Base title="Preview: watermelon varieties story" description="Review page for the watermelon varieties scroll animation.">
   <Header />
-  <main id="main" class="preview">
+  <main id="main" tabindex="-1" class="preview">
     <div class="wrap note">
       <p><strong>Preview.</strong> Scroll to play the story. The same story runs as a tab on the landing page.</p>
     </div>
-    <ScrollStory content={content} scene="watermelon">
+    <ScrollStory standalone content={content} scene="watermelon">
       <Stage slot="stage" />
     </ScrollStory>
     <div class="wrap after"><p>End of the story. On the landing page the next project is one tab over.</p></div>

@@ -35,6 +35,7 @@ export const ui = {
       title: 'Projects, step by step',
       lede: 'Five projects, from field research to tools for business. Pick one and scroll to see how it works, step by step.',
       tablist: 'Projects',
+      sceneError: 'The animation could not load. You can still read every step below.',
       next: 'Next project:',
     },
     experience: {
@@ -88,6 +89,7 @@ export const ui = {
       title: 'Proyectos, paso a paso',
       lede: 'Cinco proyectos, de la investigación de campo a las herramientas para empresas. Elija uno y siga bajando para ver cómo funciona, paso a paso.',
       tablist: 'Proyectos',
+      sceneError: 'No se pudo cargar la animación. Puede leer todos los pasos a continuación.',
       next: 'Siguiente proyecto:',
     },
     experience: {

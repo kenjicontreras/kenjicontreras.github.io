@@ -69,7 +69,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
             </button>
           ))
         }
-        <span class="ind" aria-hidden="true" data-ind></span>
       </div>
     </div>
   </div>
@@ -79,7 +78,8 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       projects.map((p, i) => {
         const { content, Stage } = stories[p.id];
         return (
-          <div class="panel" role="tabpanel" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} hidden={i !== 0}>
+          <div class="panel" role="tabpanel" tabindex="0" id={`panel-${p.id}`} aria-labelledby={`tab-${p.id}`} hidden={i !== 0}>
+            <p class="scene-status wrap" role="status" data-scene-status data-error={t.sceneError}></p>
             <ScrollStory content={content} scene={p.scene} lang={lang}>
               <Stage slot="stage" lang={lang} />
             </ScrollStory>
@@ -116,10 +116,12 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
     const pristine = stages.map((s) => s.innerHTML);
     const bar = root.querySelector<HTMLElement>('[data-bar]')!;
     const list = root.querySelector<HTMLElement>('[role="tablist"]')!;
-    const ind = root.querySelector<HTMLElement>('[data-ind]')!;
+    const narrow = matchMedia('(max-width: 900px)');
+    const setOrientation = () => list.setAttribute('aria-orientation', narrow.matches ? 'vertical' : 'horizontal');
+    setOrientation();
+    narrow.addEventListener('change', setOrientation);
     const next = root.querySelector<HTMLButtonElement>('[data-next]');
     const nextLabel = root.querySelector<HTMLElement>('[data-next-label]');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     let current = 0;
     let armed = false; // true once the reader has come near the section
@@ -132,7 +134,15 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       const section = stage.closest<HTMLElement>('[data-story]');
       const load = scenes[stage.dataset.scene || ''];
       if (!load || !section) return;
-      const scene = await load();
+      const status = panels[i].querySelector<HTMLElement>('[data-scene-status]')!;
+      status.textContent = '';
+      let scene;
+      try {
+        scene = await load();
+      } catch {
+        if (mine === token) status.textContent = status.dataset.error!;
+        return;
+      }
       if (mine !== token) return; // another tab was picked while this one loaded
       cleanup = scene({ stage, section, gsap, ScrollTrigger });
       ScrollTrigger.refresh();
@@ -145,27 +155,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       stages[i].innerHTML = pristine[i];
       stages[i].dataset.step = '1';
       panels[i].querySelectorAll('.is-active').forEach((el) => el.classList.remove('is-active'));
-    };
-
-    // The pill under the selected tab moves by transform only.
-    let indX = 0;
-    let indW = 0;
-    const placeIndicator = (animate: boolean) => {
-      const t = tabs[current];
-      const x = t.offsetLeft;
-      const w = t.offsetWidth;
-      ind.style.width = `${w}px`;
-      ind.style.top = `${t.offsetTop}px`;
-      ind.style.height = `${t.offsetHeight}px`;
-      if (animate && indW && !reduced) {
-        ind.style.transition = 'none';
-        ind.style.transform = `translateX(${indX}px) scaleX(${indW / w})`;
-        void ind.offsetWidth;
-        ind.style.transition = '';
-      }
-      ind.style.transform = `translateX(${x}px) scaleX(1)`;
-      indX = x;
-      indW = w;
     };
 
     // Once pinned, the bar shows its compact one-line height (--bar-h).
@@ -183,7 +172,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       if (now === stuck) return;
       stuck = now;
       bar.classList.toggle('is-stuck', now);
-      placeIndicator(true);
     };
     window.addEventListener('scroll', checkStuck, { passive: true });
     window.addEventListener('resize', checkStuck);
@@ -204,20 +192,19 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
           t.setAttribute('aria-selected', String(k === i));
           t.tabIndex = k === i ? 0 : -1;
         });
-        placeIndicator(true);
-        tabs[i].scrollIntoView({ block: 'nearest', inline: 'nearest' });
         if (nextLabel) nextLabel.textContent = tabs[(i + 1) % tabs.length].textContent!.replace(/^\s*\d+\s*/, '').trim();
         ScrollTrigger.refresh();
         if (armed) mount(i);
       }
       if (opts.focus) tabs[i].focus();
-      if (opts.scroll) scrollToStart(opts.scroll === 'always');
+      if (opts.scroll && !(narrow.matches && opts.focus)) scrollToStart(opts.scroll === 'always');
       if (opts.hash) history.replaceState(null, '', `#${ids[i]}`);
     };
 
     tabs.forEach((t, i) => t.addEventListener('click', () => select(i, { scroll: 'if-inside', hash: true })));
 
     list.addEventListener('keydown', (e) => {
+      if (narrow.matches ? ['ArrowLeft', 'ArrowRight'].includes(e.key) : ['ArrowUp', 'ArrowDown'].includes(e.key)) return;
       const keys: Record<string, number> = {
         ArrowRight: (current + 1) % tabs.length,
         ArrowLeft: (current - 1 + tabs.length) % tabs.length,
@@ -232,7 +219,11 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       select(keys[e.key], { focus: true, scroll: 'if-inside', hash: true });
     });
 
-    next?.addEventListener('click', () => select((current + 1) % tabs.length, { scroll: 'always', hash: true }));
+    next?.addEventListener('click', () => {
+      select((current + 1) % tabs.length, { hash: true });
+      panels[current].focus({ preventScroll: true });
+      scrollToStart(true, true);
+    });
 
     // Links to a story id (from Skills, or shared URLs) open its tab.
     // Capture phase, so Lenis's own anchor scrolling never sees these clicks
@@ -242,7 +233,7 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       (e) => {
         const a = (e.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
         const i = a ? ids.indexOf(a.hash.slice(1)) : -1;
-        if (i < 0) return;
+        if (i < 0 || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         e.preventDefault();
         e.stopImmediatePropagation();
         select(i, { scroll: 'always', hash: true });
@@ -255,8 +246,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
     };
     window.addEventListener('hashchange', fromHash);
 
-    new ResizeObserver(() => placeIndicator(false)).observe(list);
-    placeIndicator(false);
     checkStuck();
 
     // Mount the selected story when the reader comes within half a screen.
@@ -290,6 +279,7 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
 </script>
 
 <style>
+  .scene-status:not(:empty) { padding-block: 1rem; }
   .work {
     /* the site header's height, kept before .panels raises --header-h */
     --bar-top: var(--header-h);
@@ -360,8 +350,9 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
   }
   .tab[aria-selected='true'] {
     color: var(--paper);
-    background: none;
+    background: var(--navy);
   }
+  .panel:focus-visible { outline-offset: -3px; }
   .num {
     font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
@@ -439,9 +430,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
       font-size: 0.8rem;
       line-height: 1.15;
     }
-    .tablist .ind {
-      border-radius: 12px;
-    }
   }
   @media (min-width: 901px) and (max-width: 1180px) {
     .tab {
@@ -460,19 +448,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
   }
   .tablist::-webkit-scrollbar {
     display: none;
-  }
-  .ind {
-    position: absolute;
-    left: 0;
-    top: 8px;
-    height: 44px;
-    border-radius: 999px;
-    background: var(--navy);
-    transform-origin: left center;
-    transition:
-      transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1),
-      top 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
-      height 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
   /* Stories pin below the tab bar: ScrollStory and story.ts read --header-h. */
@@ -499,11 +474,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
   @media (max-width: 900px) {
     .bar {
       position: static;
-    }
-    /* Phones and narrow tablets: all five projects as a vertical list,
-       each with its number and full title; the navy highlight slides
-       to the selected one. */
-    .bar {
       border-bottom: 0;
     }
     .tablist {
@@ -527,9 +497,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
     }
     .tab[aria-selected='true'] {
       border-color: transparent;
-    }
-    .tablist .ind {
-      border-radius: 12px;
     }
     .panels {
       --header-h: var(--bar-top);
@@ -563,7 +530,6 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ind,
     .bar,
     .bar::after {
       transition: none;

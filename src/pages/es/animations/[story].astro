@@ -36,11 +36,11 @@ const { content, Stage } = stories[id];
 <Base title={`Vista previa: ${content.title}`} description="Página de revisión de la animación." lang="es">
   <meta name="robots" content="noindex" slot="head" />
   <Header lang="es" />
-  <main id="main" class="preview">
+  <main id="main" tabindex="-1" class="preview">
     <div class="wrap note">
       <p><strong>Vista previa.</strong> Desplácese para ver la historia. La misma historia aparece como pestaña en la página principal.</p>
     </div>
-    <ScrollStory content={content} scene={scene} lang="es">
+    <ScrollStory standalone content={content} scene={scene} lang="es">
       <Stage slot="stage" lang="es" />
     </ScrollStory>
     <div class="wrap after"><p>Fin de la historia.</p></div>

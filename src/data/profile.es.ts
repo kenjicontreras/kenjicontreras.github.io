@@ -10,7 +10,8 @@ export const profileEs: typeof profile = {
   location: 'Ciudad de Panamá, Panamá',
   headline: 'IA para descifrar datos difíciles.',
   intro:
-    'Convierto datos complejos o incompletos en respuestas claras y desarrollo herramientas de IA que automatizan el trabajo repetitivo. Más de cinco años en investigación aplicada, con métodos publicados en revistas científicas indexadas, y experiencia en la empresa privada adaptando algoritmos de análisis de texto a información de encuestas en español.',
+    'Convierto datos complejos o incompletos en respuestas claras y desarrollo herramientas de IA que automatizan el trabajo repetitivo.',
+  background: 'Más de cinco años en investigación aplicada, con métodos publicados en revistas científicas indexadas, y experiencia en la empresa privada adaptando algoritmos de análisis de texto a información de encuestas en español.',
   availability:
     'Disponible para proyectos de ciencia de datos, herramientas de IA y automatización de flujos de trabajo. Trabajo remoto, en español o en inglés.',
 };
