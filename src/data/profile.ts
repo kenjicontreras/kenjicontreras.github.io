@@ -9,7 +9,7 @@ export const profile = {
   headline: 'AI for data that’s hard to work with.',
   intro:
     'I turn messy data into clear answers and build AI tools that automate repetitive work.',
-  background: 'Over five years of applied research, with methods published in peer-reviewed journals, plus industry experience building AI tools and analytics for survey research.',
+  background: 'My research methods have been published in peer-reviewed journals. At CID Gallup, I built tools that group open-ended survey answers and flag interviews for review.',
   availability: 'Taking projects in data science, AI tools and workflow automation. Remote, in English or Spanish.',
   email: 'kcinao@gmail.com',
   links: {

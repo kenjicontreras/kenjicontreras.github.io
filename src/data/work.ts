@@ -14,10 +14,10 @@ export type Project = {
 
 export const projects: Project[] = [
   { id: 'binational-manatees', tab: 'Tracking manatees by voice', scene: 'binational' },
+  { id: 'survey-nlp', tab: 'Survey coding and interview audits', scene: 'surveynlp' },
   { id: 'drone-manatees', tab: 'Detecting manatees from the air', scene: 'dronemanatees' },
   { id: 'vector-spectra', tab: 'Mosquito and tick fingerprints', scene: 'vectorspectra' },
   { id: 'watermelon-varieties', tab: 'Automating watermelon sorting', scene: 'watermelon' },
-  { id: 'survey-nlp', tab: 'Decoding what people say', scene: 'surveynlp' },
 ];
 
 export type Role = {

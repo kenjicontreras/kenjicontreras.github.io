@@ -8,6 +8,7 @@ export const content: StoryContent = {
   id: 'binational-manatees',
   title: 'Tracking endangered manatees across borders by their calls',
   meta: 'Smithsonian Tropical Research Institute and UTP, 2021 to now',
+  intro: 'The team used underwater recordings to identify individual manatees and study their movements between Panama and Costa Rica.',
   steps: [
     {
       title: 'Who are the Greater Caribbean manatees?',
@@ -122,6 +123,7 @@ export const content: StoryContent = {
   ],
   stack: ['Python', 'TensorFlow', 'MobileNet', 'Scattering wavelets (Kymatio)', 'PaCMAP', 'HDBSCAN'],
   source: {
+    shortLabel: 'Read the paper',
     label: 'Read the paper in Frontiers in Marine Science',
     href: 'https://doi.org/10.3389/fmars.2025.1661294',
   },

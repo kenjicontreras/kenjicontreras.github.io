@@ -7,6 +7,7 @@ export const content: StoryContent = {
   ...en,
   title: 'Reconociendo al manatí antillano por sus vocalizaciones, entre Panamá y Costa Rica',
   meta: 'Smithsonian Tropical Research Institute y UTP, 2021 a la fecha',
+  intro: 'El equipo utilizó grabaciones submarinas para identificar a los manatíes por sus vocalizaciones y estudiar sus desplazamientos entre Panamá y Costa Rica.',
   steps: [
     {
       title: '¿Quiénes son los manatíes del Gran Caribe?',
@@ -121,6 +122,7 @@ export const content: StoryContent = {
   ],
   stack: ['Python', 'TensorFlow', 'MobileNet', 'Scattering wavelets (Kymatio)', 'PaCMAP', 'HDBSCAN'],
   source: {
+    shortLabel: 'Leer el artículo',
     label: 'Lea el artículo en Frontiers in Marine Science',
     href: en.source!.href,
   },

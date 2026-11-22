@@ -54,7 +54,7 @@ export const ui = {
       altTkd: 'Kenji Contreras in a white taekwondo uniform with a black belt',
     },
     contact: {
-      title: 'Send me the data you’re stuck with.',
+      title: 'What are you trying to find out or automate?',
       lede: 'Tell me what you’re working on, whether it’s data to analyse or a repetitive process to automate, and what a good result looks like. I’ll tell you whether I can help, and how I’d do it.',
       email: 'Email me',
       cv: 'Download CV (PDF)',
@@ -108,7 +108,7 @@ export const ui = {
       altTkd: 'Kenji Contreras con uniforme blanco de taekwondo y cinturón negro',
     },
     contact: {
-      title: 'Envíeme los datos que se le resisten.',
+      title: '¿Qué quiere averiguar o automatizar?',
       lede: 'Cuénteme en qué está trabajando, ya sean datos por analizar o un proceso repetitivo por automatizar, y cómo sería un buen resultado. Le diré si puedo ayudarle y cómo lo haría.',
       email: 'Escríbame',
       cv: 'Descargar CV (PDF, en inglés)',

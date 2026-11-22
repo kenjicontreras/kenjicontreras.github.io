@@ -23,7 +23,7 @@ const total = c.steps.length;
 
 <section class="story" id={c.id} data-case data-story aria-labelledby={`${c.id}-title`}>
   <div class="wrap">
-    <header class:list={['head', { solo: !c.intro && !c.role }]}>
+    <header class:list={['head', { solo: !c.role }]}>
       <div>
         <Title class="story-title" id={`${c.id}-title`}>{c.title}</Title>
         <p class="meta">{c.meta}</p>
@@ -31,7 +31,10 @@ const total = c.steps.length;
       {
         (c.intro || c.role) && (
           <div>
-            {c.intro && <p class="intro">{c.intro}</p>}
+            {c.intro && <p class="intro">
+              {c.intro}{' '}
+              {c.source?.shortLabel && <a class="source" href={c.source.href} target="_blank" rel="noopener">{c.source.shortLabel}</a>}
+            </p>}
             {c.role && <p class="role">{c.role}</p>}
           </div>
         )
@@ -163,7 +166,7 @@ const total = c.steps.length;
     align-items: end;
     margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
   }
-  /* no intro or role: the title runs on one line across the section */
+  /* Without a separate role description, the takeaway follows the title. */
   .head.solo {
     grid-template-columns: 1fr;
   }
