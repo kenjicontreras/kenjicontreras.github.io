@@ -114,7 +114,7 @@ export const ui = {
       cv: 'Descargar CV (PDF, en inglés)',
       or: 'o escriba a',
       howTitle: 'Cómo trabajo',
-      how: 'Empezamos con una llamada breve sobre sus datos o su proceso y lo que debe lograr. Luego recibe una propuesta escrita con el alcance, el plazo y el precio, y el trabajo se entrega por etapas que usted puede revisar, con el código y la documentación al final. En español o en inglés.',
+      how: 'Empezamos con una llamada breve para entender sus datos o procesos y definir qué necesita lograr. Luego le envío una propuesta escrita con el alcance, el plazo y el presupuesto. El trabajo se desarrolla en etapas revisables y, al finalizar, recibe el código y la documentación. Podemos trabajar en español o en inglés.',
       city: 'Ciudad de Panamá',
     },
     story: { hood: 'Detalle técnico:', tools: 'Herramientas usadas', related: 'Artículos relacionados', lead: 'Autor principal' },
