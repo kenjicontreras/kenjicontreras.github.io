@@ -143,6 +143,13 @@ export const about: {
       link: 'UTP profile',
     },
     {
+      name: 'Dr. Danilo Cáceres-Hernández',
+      role: 'Researcher, Faculty of Electrical Engineering, UTP',
+      work: 'Research supervisor: watermelon classification',
+      href: 'https://www.academia.utp.ac.pa/danilo-caceres',
+      link: 'UTP profile',
+    },
+    {
       name: 'Mgtr. Ana Patricia Alfonso',
       role: 'Regional Director, CID Gallup',
       work: 'Project manager: survey analysis and AI tools',
