@@ -14,7 +14,7 @@ export const ui = {
   en: {
     metaTitle: (name: string) => `${name}, data scientist and researcher`,
     metaDescription:
-      'Data scientist and researcher in Panama. Machine learning, computer vision, LLM-powered tools and AI workflow automation for research and business.',
+      'Data scientist and researcher in Panama. I find clear answers in incomplete, noisy or messy data, and build AI tools that automate repetitive work.',
     ogLocale: 'en_US',
     jobTitle: 'Data Scientist & Researcher',
     skip: 'Skip to content',
@@ -68,7 +68,7 @@ export const ui = {
   es: {
     metaTitle: (name: string) => `${name}, científico de datos e investigador`,
     metaDescription:
-      'Científico de datos e investigador en Panamá. Machine learning, visión por computadora, herramientas con modelos de lenguaje (LLM) y automatización de flujos de trabajo con IA para investigación y empresas.',
+      'Científico de datos e investigador en Panamá. Encuentro respuestas claras en datos incompletos, desordenados o contaminados, y desarrollo herramientas de IA que automatizan tareas repetitivas.',
     ogLocale: 'es_PA',
     jobTitle: 'Científico de datos e investigador',
     skip: 'Saltar al contenido',
