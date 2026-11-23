@@ -8,7 +8,7 @@ const tabs: Record<Project['id'], string> = {
   'drone-manatees': 'Detección aérea de manatíes',
   'vector-spectra': 'Huellas de mosquitos y garrapatas',
   'watermelon-varieties': 'Clasificación automática de sandías',
-  'survey-nlp': 'Codificar y auditar encuestas',
+  'survey-nlp': 'Patrones en lo que dice la gente',
 };
 
 export const projectsEs: Project[] = projects.map((p) => ({ ...p, tab: tabs[p.id] }));
