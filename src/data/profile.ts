@@ -8,7 +8,7 @@ export const profile = {
   location: 'Panama City, Panama',
   headline: 'AI for data that’s hard to work with.',
   intro:
-    'I find clear answers in incomplete, noisy or scattered data.',
+    'I find clear answers in incomplete, noisy or messy data.',
   background: 'Over five years in applied research and data science, with methods published in peer-reviewed journals, and industry experience developing AI tools that automate repetitive tasks.',
   availability: 'Taking projects in data science, AI tools and workflow automation. Remote, in English or Spanish.',
   email: 'kcinao@gmail.com',
