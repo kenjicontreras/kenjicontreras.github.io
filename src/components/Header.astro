@@ -55,17 +55,6 @@ const sectionHref = (id: string) => `${onLanding ? '' : landing}#${id}`;
       <a href={sectionHref('about')}>{t.nav.about}</a>
       <a href={sectionHref('contact')} class="m-contact">{t.nav.contact}</a>
     </nav>
-    <div class="wrap m-lang" role="group" aria-label={t.langLabel}>
-      {
-        langs.map((l) =>
-          l === lang ? (
-            <span class="cur" aria-current="true" lang={l}>{t.langName[l]}</span>
-          ) : (
-            <a class="alt" href={pathFor(l)} hreflang={l} lang={l} data-lang-link>{t.langName[l]}</a>
-          ),
-        )
-      }
-    </div>
   </div>
 </header>
 
@@ -199,10 +188,16 @@ const sectionHref = (id: string) => `${onLanding ? '' : landing}#${id}`;
     display: none;
   }
   @media (max-width: 900px) {
-    /* Phones: every section, Contact included, lives in the menu. */
-    .inner > nav a,
-    .inner > nav .lang {
+    /* Phones: every section, Contact included, lives in the menu; the language
+       switch stays in the bar, one tap away. */
+    .inner > nav > a {
       display: none;
+    }
+    .lang {
+      margin-left: 0;
+      padding-left: 0;
+      border-left: 0;
+      margin-right: 0.25rem;
     }
     .menu-btn {
       display: inline-grid;
@@ -258,7 +253,7 @@ const sectionHref = (id: string) => `${onLanding ? '' : landing}#${id}`;
       flex-direction: column;
       align-items: stretch;
       gap: 0;
-      padding-block: 0.5rem 0;
+      padding-block: 0.5rem;
     }
     .mpanel nav a {
       min-height: 48px;
@@ -271,31 +266,6 @@ const sectionHref = (id: string) => `${onLanding ? '' : landing}#${id}`;
     .mpanel nav a.m-contact {
       font-weight: 650;
       color: var(--teal-deep);
-    }
-    .m-lang {
-      display: flex;
-      align-items: center;
-      gap: 1.25rem;
-      border-top: 1px solid var(--rule);
-      padding-block: 0.25rem 0.5rem;
-      font-size: 1.0625rem;
-    }
-    .m-lang .cur,
-    .m-lang a.alt {
-      display: inline-flex;
-      align-items: center;
-      min-height: 48px;
-    }
-    .m-lang .cur {
-      font-weight: 650;
-      color: var(--ink);
-    }
-    .m-lang a.alt {
-      font-weight: 500;
-      color: var(--slate);
-      text-decoration: underline;
-      text-underline-offset: 0.25em;
-      text-decoration-color: var(--rule);
     }
   }
   @media (max-width: 900px) and (prefers-reduced-motion: reduce) {
