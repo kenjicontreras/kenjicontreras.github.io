@@ -10,7 +10,7 @@ export const profileEs: typeof profile = {
   location: 'Ciudad de Panamá, Panamá',
   headline: 'IA para descifrar datos complejos.',
   intro:
-    'Encuentro respuestas claras en datos incompletos, dispersos o contaminados.',
+    'Encuentro respuestas claras en datos incompletos, desordenados o contaminados.',
   background: 'Más de cinco años en investigación aplicada y ciencia de datos, con métodos publicados en revistas científicas indexadas, y experiencia en la empresa privada desarrollando herramientas de IA que automatizan el trabajo repetitivo.',
   availability:
     'Disponible para proyectos de ciencia de datos, herramientas de IA y automatización de flujos de trabajo. Trabajo remoto, en español o en inglés.',
