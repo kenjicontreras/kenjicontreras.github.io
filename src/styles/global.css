@@ -46,6 +46,13 @@ html {
   -webkit-text-size-adjust: 100%;
   scroll-padding-top: calc(var(--header-h) + 12px);
 }
+/* Wide monitors: the base size grows smoothly from 100% at 1920px to 112.5% at
+   2560px, so type, spacing and the --max column (in rem) scale together. */
+@media (min-width: 1921px) {
+  html {
+    font-size: clamp(100%, calc(100% + 0.3125vw - 6px), 112.5%);
+  }
+}
 
 html.lenis,
 html.lenis body {

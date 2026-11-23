@@ -81,7 +81,7 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
             </li>
           </ul>
           <h3>{t.about.languages}</h3>
-          <p class="tk">{about.languages.join('; ')}</p>
+          <ul class="langs">{about.languages.map((l) => <li>{l}</li>)}</ul>
         </div>
         <div>
           <h3>{t.about.venues}</h3>
@@ -288,8 +288,16 @@ const photoTkd = Object.values(foundTkd)[0]?.default;
     min-height: 44px;
     font-weight: 600;
   }
-  .tk {
+  .langs {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: grid;
+    gap: 0.2rem;
     color: var(--ink);
+    line-height: 1.4;
+  }
+  .langs li::marker {
+    color: var(--teal-deep);
   }
 
   @media (max-width: 860px) {

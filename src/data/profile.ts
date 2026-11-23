@@ -8,8 +8,8 @@ export const profile = {
   location: 'Panama City, Panama',
   headline: 'AI for data that’s hard to work with.',
   intro:
-    'I turn messy data into clear answers and build AI tools that automate repetitive work.',
-  background: 'Over five years of applied research, with methods published in peer-reviewed journals, plus industry experience building AI tools and analytics for survey research.',
+    'I find clear answers in incomplete, noisy or scattered data.',
+  background: 'Over five years in applied research and data science, with methods published in peer-reviewed journals, and industry experience developing AI tools that automate repetitive tasks.',
   availability: 'Taking projects in data science, AI tools and workflow automation. Remote, in English or Spanish.',
   email: 'kcinao@gmail.com',
   links: {
@@ -107,12 +107,11 @@ export const about: {
   references: Reference[];
 } = {
   paragraphs: [
-    'I trained as a telecommunications engineer, but nature has always pulled me in. I found it fascinating how numbers and statistics could make sense of something as complex as animal sounds or the lives of insects. Most of the data I’ve worked with since has been noisy, scarce or recorded in the field, so I learned to build AI that works in exactly those conditions.',
+    'I trained as a telecommunications engineer, but I was always curious about how nature works. I found it fascinating how numbers and statistics could make sense of something as complex as animal sounds or the diversity of insects. Most of the data I’ve worked with since has been noisy, scarce or recorded in the field, so I learned to build AI that works in exactly those conditions.',
     'Outside work, I’ve practised martial arts for ten years and now teach classes to people of all ages. The training and its philosophy give me balance that complements the way I work. Additionally, I love learning languages: besides Spanish and English, I’ve picked up a few others along the way to broaden my cultural background and communication skills.',
   ],
   education: [
-    { title: 'Bachelor’s degree in Telecommunications Engineering', place: 'Universidad Tecnológica de Panamá', years: '2016 to 2022' },
-    { title: 'Goethe-Zertifikat A1 (German)', place: 'Instituto Cultural Alemán', years: '2013' },
+    { title: 'Bachelor’s degree in Telecommunications Engineering', place: 'Faculty of Electrical Engineering, Universidad Tecnológica de Panamá', years: '2016 to 2022' },
   ],
   teaching: {
     title: 'Martial arts instructor, black belt in Taekwondo and Haidong Gumdo (Korean sword)',

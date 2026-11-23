@@ -8,10 +8,10 @@ export const profileEs: typeof profile = {
   ...profile,
   role: 'Científico de datos e investigador',
   location: 'Ciudad de Panamá, Panamá',
-  headline: 'IA para descifrar datos difíciles.',
+  headline: 'IA para descifrar datos complejos.',
   intro:
-    'Convierto datos complejos o incompletos en respuestas claras y desarrollo herramientas de IA que automatizan el trabajo repetitivo.',
-  background: 'Más de cinco años en investigación aplicada, con métodos publicados en revistas científicas indexadas, y experiencia en la empresa privada adaptando algoritmos de análisis de texto a información de encuestas en español.',
+    'Encuentro respuestas claras en datos incompletos, dispersos o contaminados.',
+  background: 'Más de cinco años en investigación aplicada y ciencia de datos, con métodos publicados en revistas científicas indexadas, y experiencia en la empresa privada desarrollando herramientas de IA que automatizan el trabajo repetitivo.',
   availability:
     'Disponible para proyectos de ciencia de datos, herramientas de IA y automatización de flujos de trabajo. Trabajo remoto, en español o en inglés.',
 };
@@ -60,12 +60,11 @@ const refsEs: Pick<Reference, 'role' | 'work' | 'link'>[] = [
 
 export const aboutEs: typeof about = {
   paragraphs: [
-    'Me formé como ingeniero en telecomunicaciones, pero la naturaleza siempre me ha atraído. Me fascinaba cómo los números y la estadística podían dar sentido a algo tan complejo como los sonidos de los animales o la diversidad de los insectos. Desde entonces, la mayoría de los datos con los que he trabajado han sido ruidosos, escasos o registrados en campo, así que aprendí a desarrollar IA que funcione justamente en esas condiciones.',
-    'Fuera del trabajo, practico artes marciales desde hace diez años y hoy doy clases a personas de todas las edades. El entrenamiento y su filosofía me dan un equilibrio que complementa mi forma de trabajar. Además, me encanta aprender idiomas: aparte del español y el inglés, he estudiado alemán y japonés para ampliar mi bagaje cultural y mis habilidades de comunicación.',
+    'Me formé como ingeniero en telecomunicaciones, pero desde siempre me ha interesado entender cómo funciona la naturaleza. Me fascinaba cómo los números y la estadística podían dar sentido a algo tan complejo como los sonidos de los animales o la diversidad de los insectos. Desde entonces, la mayoría de los datos con los que he trabajado han sido escasos, se han registrado en campo o han estado contaminados con ruido, así que aprendí a desarrollar IA que funcione justamente en esas condiciones.',
+    'Fuera del trabajo, practico artes marciales desde hace diez años y actualmente doy clases a personas de todas las edades. El entrenamiento y su filosofía me dan un equilibrio que complementa mi forma de trabajar. Además, me encanta aprender idiomas: aparte del español y el inglés, he estudiado alemán y japonés para ampliar mi bagaje cultural y mis habilidades de comunicación.',
   ],
   education: [
-    { title: 'Licenciatura en Ingeniería en Telecomunicaciones', place: 'Universidad Tecnológica de Panamá', years: '2016 a 2022' },
-    { title: 'Goethe-Zertifikat A1 (alemán)', place: 'Instituto Cultural Alemán', years: '2013' },
+    { title: 'Licenciatura en Ingeniería en Telecomunicaciones', place: 'Facultad de Ingeniería Eléctrica, Universidad Tecnológica de Panamá', years: '2016 a 2022' },
   ],
   teaching: {
     title: 'Instructor de artes marciales, cinturón negro en taekwondo y Haidong Gumdo (espada coreana)',

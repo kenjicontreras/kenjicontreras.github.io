@@ -287,6 +287,13 @@ for (const [en, sp] of [[binational, binationalEs], [drone, droneEs], [spectra, 
     --bar-full: 96px; /* in the page, two lines */
     padding-block: clamp(3rem, 6vw, 4.5rem) clamp(2.5rem, 5vw, 4rem);
   }
+  /* Wide monitors: the type grows (see global.css), so the two-line bar grows with it,
+     96px at 1920px to 108px at 2560px. */
+  @media (min-width: 1921px) {
+    .work {
+      --bar-full: clamp(96px, calc(1.875vw + 60px), 108px);
+    }
+  }
   /* The heading takes one line with the lede beside it, close above the tabs. */
   .work .block-head {
     display: grid;

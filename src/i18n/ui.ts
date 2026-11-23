@@ -26,7 +26,7 @@ export const ui = {
     langName: { en: 'English', es: 'Español' },
     hero: {
       discuss: 'Discuss your project',
-      see: 'See the projects',
+      see: 'See my projects',
       cv: 'Download my CV (PDF)',
       trust: 'Research and work with',
     },
@@ -80,7 +80,7 @@ export const ui = {
     langName: { en: 'English', es: 'Español' },
     hero: {
       discuss: 'Hablemos de su proyecto',
-      see: 'Explore los proyectos',
+      see: 'Explore mis proyectos',
       cv: 'Descargar mi CV (PDF, en inglés)',
       trust: 'Investigación y trabajo con',
     },
@@ -108,7 +108,7 @@ export const ui = {
       altTkd: 'Kenji Contreras con uniforme blanco de taekwondo y cinturón negro',
     },
     contact: {
-      title: '¿Qué quiere averiguar o automatizar?',
+      title: '¿Tiene un proyecto en mente o un problema que resolver?',
       lede: 'Cuénteme en qué está trabajando, ya sean datos por analizar o un proceso repetitivo por automatizar, y cómo sería un buen resultado. Le diré si puedo ayudarle y cómo lo haría.',
       email: 'Escríbame',
       cv: 'Descargar CV (PDF, en inglés)',
