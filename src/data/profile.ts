@@ -148,6 +148,7 @@ export const about: {
       work: 'Research supervisor: watermelon classification',
       href: 'https://www.academia.utp.ac.pa/danilo-caceres',
       link: 'UTP profile',
+      more: { href: 'https://conecto.senacyt.gob.pa/conecto/display/n31817', link: 'Conecto SENACYT' },
     },
     {
       name: 'Mgtr. Ana Patricia Alfonso',
